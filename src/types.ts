@@ -36,6 +36,8 @@ export type ScoreDescriptor =
   | { kind: 'cloister'; surrounding: number; completed: boolean }
   | { kind: 'field'; cities: number; pig: boolean }
   | { kind: 'castle'; value: number }
+  | { kind: 'gold'; ingots: number }
+  | { kind: 'message'; points: number }
   | { kind: 'goodsBonus'; good: GoodType }
   | { kind: 'manual'; amount: number }
 

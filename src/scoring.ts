@@ -7,7 +7,14 @@ import type { GoodType } from './types'
  * ScoreDescriptor so they can be localized.
  */
 
-export type FeatureType = 'road' | 'city' | 'cloister' | 'field' | 'castle'
+export type FeatureType =
+  | 'road'
+  | 'city'
+  | 'cloister'
+  | 'field'
+  | 'castle'
+  | 'gold'
+  | 'message'
 
 /** Emoji shown for each game feature (and for manual adjustments). */
 export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
@@ -16,6 +23,8 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
   cloister: '⛪',
   field: '🌾',
   castle: '🏯',
+  gold: '🪙',
+  message: '📜',
   manual: '✏️',
 }
 
@@ -26,13 +35,16 @@ export const PIG_EMOJI = '🐷'
 
 /** Trade-goods tokens (Traders & Builders). */
 export const GOODS_EMOJI: Record<GoodType, string> = {
-  wine: '🍷',
-  grain: '🌽',
-  cloth: '🧵',
+  wine: '🛢️',
+  grain: '🌾',
+  cloth: '🧣',
 }
 
 /** Points awarded to each player holding the majority of a trade good. */
 export const GOODS_MAJORITY_BONUS = 10
+
+/** Points per gold ingot at game end (Gold Mines). */
+export const GOLD_PER_INGOT = 3
 
 const clamp = (n: number) => Math.max(0, Math.floor(n))
 
@@ -82,4 +94,14 @@ export function scoreField(cities: number, pig: boolean): number {
 /** Castle (Bridges, Castles & Bazaars): scores the value of the feature that triggered it. */
 export function scoreCastle(value: number): number {
   return clamp(value)
+}
+
+/** Gold Mines: each collected gold ingot is worth 3 points. */
+export function scoreGold(ingots: number): number {
+  return clamp(ingots) * GOLD_PER_INGOT
+}
+
+/** The Messages: points received from a message tile (entered directly). */
+export function scoreMessage(points: number): number {
+  return clamp(points)
 }

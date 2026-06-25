@@ -12,6 +12,8 @@ import {
   scoreCity,
   scoreCloister,
   scoreField,
+  scoreGold,
+  scoreMessage,
   scoreRoad,
   type FeatureType,
 } from '../scoring'
@@ -105,7 +107,15 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [feature, setFeature] = useState<FeatureType>('road')
 
-  const features: FeatureType[] = ['road', 'city', 'cloister', 'field', 'castle']
+  const features: FeatureType[] = [
+    'road',
+    'city',
+    'cloister',
+    'field',
+    'castle',
+    'gold',
+    'message',
+  ]
 
   return (
     <div>
@@ -131,6 +141,8 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
       {feature === 'cloister' && <CloisterForm onApply={onApply} />}
       {feature === 'field' && <FieldForm onApply={onApply} />}
       {feature === 'castle' && <CastleForm onApply={onApply} />}
+      {feature === 'gold' && <GoldForm onApply={onApply} />}
+      {feature === 'message' && <MessageForm onApply={onApply} />}
     </div>
   )
 }
@@ -325,6 +337,34 @@ function CastleForm({ onApply }: { onApply: ApplyFn }) {
       <NumberField label={t.castleValue} value={value} onChange={setValue} min={0} />
       <p className="mt-1 text-xs text-white/40">{t.castleHint}</p>
       <ApplyBar amount={scoreCastle(value)} desc={{ kind: 'castle', value }} onApply={onApply} />
+    </div>
+  )
+}
+
+function GoldForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [ingots, setIngots] = useState(1)
+  return (
+    <div>
+      <NumberField label={t.goldIngots} value={ingots} onChange={setIngots} min={0} />
+      <p className="mt-1 text-xs text-white/40">{t.goldHint}</p>
+      <ApplyBar amount={scoreGold(ingots)} desc={{ kind: 'gold', ingots }} onApply={onApply} />
+    </div>
+  )
+}
+
+function MessageForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [points, setPoints] = useState(2)
+  return (
+    <div>
+      <NumberField label={t.points} value={points} onChange={setPoints} min={0} />
+      <p className="mt-1 text-xs text-white/40">{t.messageHint}</p>
+      <ApplyBar
+        amount={scoreMessage(points)}
+        desc={{ kind: 'message', points }}
+        onApply={onApply}
+      />
     </div>
   )
 }

@@ -97,6 +97,9 @@ export interface Strings {
   pig: string
   castleValue: string
   castleHint: string
+  goldIngots: string
+  goldHint: string
+  messageHint: string
   goodNames: Record<GoodType, string>
   recordGoods: string
   goodsTabHint: string
@@ -150,6 +153,8 @@ const en: Strings = {
     cloister: 'Cloister',
     field: 'Field',
     castle: 'Castle',
+    gold: 'Gold',
+    message: 'Message',
   },
   tiles: 'Tiles',
   pennants: 'Pennants',
@@ -175,6 +180,9 @@ const en: Strings = {
   castleValue: 'Feature value',
   castleHint:
     'Scores the points of the completed feature that triggered the castle.',
+  goldIngots: 'Gold ingots',
+  goldHint: 'Each gold ingot is worth 3 points (Gold Mines).',
+  messageHint: 'Points received from a message tile (The Messages).',
   goodNames: {
     wine: 'Wine',
     grain: 'Grain',
@@ -244,6 +252,8 @@ const ru: Strings = {
     cloister: 'Монастырь',
     field: 'Луг',
     castle: 'Замок',
+    gold: 'Золото',
+    message: 'Послание',
   },
   tiles: 'Тайлы',
   pennants: 'Гербы',
@@ -272,6 +282,9 @@ const ru: Strings = {
   pig: 'Свинья',
   castleValue: 'Очки объекта',
   castleHint: 'Начисляет очки завершённого объекта, который активировал замок.',
+  goldIngots: 'Слитки золота',
+  goldHint: 'Каждый слиток золота — 3 очка (Золотые жилы).',
+  messageHint: 'Очки, полученные от послания (Послания).',
   goodNames: {
     wine: 'Вино',
     grain: 'Зерно',
@@ -347,6 +360,10 @@ function formatEn(d: ScoreDescriptor): string {
     }
     case 'castle':
       return `${FEATURE_EMOJI.castle} Castle (${d.value})`
+    case 'gold':
+      return `${FEATURE_EMOJI.gold} Gold (${d.ingots} ${pluralEn(d.ingots, 'ingot', 'ingots')})`
+    case 'message':
+      return `${FEATURE_EMOJI.message} Message`
     case 'goodsBonus':
       return `${GOODS_EMOJI[d.good]} ${capitalize(d.good)} majority`
     case 'manual':
@@ -385,6 +402,10 @@ function formatRu(d: ScoreDescriptor): string {
     }
     case 'castle':
       return `${FEATURE_EMOJI.castle} Замок (${d.value})`
+    case 'gold':
+      return `${FEATURE_EMOJI.gold} Золото (${d.ingots} ${pluralRu(d.ingots, ['слиток', 'слитка', 'слитков'])})`
+    case 'message':
+      return `${FEATURE_EMOJI.message} Послание`
     case 'goodsBonus': {
       const names: Record<typeof d.good, string> = {
         wine: 'вино',
