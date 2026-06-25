@@ -82,10 +82,11 @@ export function scoreCloister(surrounding: number, completed: boolean): number {
 
 /**
  * Field (game end): 3 points for each completed city the field borders, or 4
- * if the player has a pig in that field (Traders & Builders).
+ * if the player has a pig in that field (Traders & Builders). Each adjacent
+ * castle (Bridges, Castles & Bazaars) adds a flat 1 point.
  */
-export function scoreField(cities: number, pig: boolean): number {
-  return clamp(cities) * (pig ? 4 : 3)
+export function scoreField(cities: number, pig: boolean, castles: number): number {
+  return clamp(cities) * (pig ? 4 : 3) + clamp(castles)
 }
 
 /** Castle (Bridges, Castles & Bazaars): scores the value of the feature that triggered it. */

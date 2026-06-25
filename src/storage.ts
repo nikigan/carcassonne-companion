@@ -45,11 +45,17 @@ export function clearGame(): void {
 /**
  * Bring a stored log entry up to the current shape. Earlier versions stored a
  * pre-rendered `label` string instead of a structured `desc`; fall back to a
- * manual descriptor so old saves keep working.
+ * manual descriptor so old saves keep working. Field descriptors gained a
+ * `castles` count later — backfill 0 so old labels don't render `undefined`.
  */
 function migrateEntry(entry: ScoreEntry): ScoreEntry {
-  if (entry.desc) return entry
-  return { ...entry, desc: { kind: 'manual', amount: entry.amount } }
+  if (!entry.desc) {
+    return { ...entry, desc: { kind: 'manual', amount: entry.amount } }
+  }
+  if (entry.desc.kind === 'field' && entry.desc.castles == null) {
+    return { ...entry, desc: { ...entry.desc, castles: 0 } }
+  }
+  return entry
 }
 
 /** Ensure players from older saves have trade-goods and gold tallies. */

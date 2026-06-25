@@ -44,7 +44,7 @@ export type ScoreDescriptor =
       cathedral: boolean
     }
   | { kind: 'cloister'; surrounding: number; completed: boolean }
-  | { kind: 'field'; cities: number; pig: boolean }
+  | { kind: 'field'; cities: number; pig: boolean; castles: number }
   | { kind: 'castle'; value: number }
   | { kind: 'gold'; ingots: number }
   | { kind: 'message'; points: number }

@@ -167,7 +167,7 @@ const en: Strings = {
     'Completed: 2 per tile + 2 per coat of arms. Cathedral: 3 each when completed, 0 if not.',
   cloisterHint: '1 for the monastery + 1 per surrounding tile (max 9).',
   fieldHint:
-    'Game end: 3 points per completed city it borders (4 with a pig).',
+    'Game end: 3 points per completed city it borders (4 with a pig), +1 per adjacent castle.',
   currentScore: (score) => `Current: ${score} ${pluralEn(score, 'pt', 'pts')}`,
   addPoints: (n) => `Add ${n} ${pluralEn(n, 'point', 'points')}`,
   points: 'Points',
@@ -270,7 +270,7 @@ const ru: Strings = {
   cloisterHint:
     '1 за монастырь + 1 за каждый соседний тайл (максимум 9).',
   fieldHint:
-    'В конце игры: 3 очка за каждый завершённый город рядом (4 со свиньёй).',
+    'В конце игры: 3 очка за каждый завершённый город рядом (4 со свиньёй), +1 за каждый соседний замок.',
   currentScore: (score) =>
     `Сейчас: ${score} ${pluralRu(score, ['очко', 'очка', 'очков'])}`,
   addPoints: (n) =>
@@ -361,7 +361,8 @@ function formatEn(d: ScoreDescriptor): string {
         : `${FEATURE_EMOJI.cloister} Monastery (${d.surrounding} surrounding ${pluralEn(d.surrounding, 'tile', 'tiles')})`
     case 'field': {
       const pig = d.pig ? ` ${PIG_EMOJI}` : ''
-      return `${FEATURE_EMOJI.field} Field${pig} (${d.cities} completed ${pluralEn(d.cities, 'city', 'cities')})`
+      const castles = d.castles > 0 ? `, ${d.castles} ${FEATURE_EMOJI.castle}` : ''
+      return `${FEATURE_EMOJI.field} Field${pig} (${d.cities} completed ${pluralEn(d.cities, 'city', 'cities')}${castles})`
     }
     case 'castle':
       return `${FEATURE_EMOJI.castle} Castle (${d.value})`
@@ -403,7 +404,8 @@ function formatRu(d: ScoreDescriptor): string {
         : `${FEATURE_EMOJI.cloister} Монастырь (${d.surrounding} ${pluralRu(d.surrounding, ['тайл', 'тайла', 'тайлов'])} вокруг)`
     case 'field': {
       const pig = d.pig ? ` ${PIG_EMOJI}` : ''
-      return `${FEATURE_EMOJI.field} Поле${pig} (${d.cities} ${pluralRu(d.cities, ['завершённый город', 'завершённых города', 'завершённых городов'])})`
+      const castles = d.castles > 0 ? `, ${d.castles} ${FEATURE_EMOJI.castle}` : ''
+      return `${FEATURE_EMOJI.field} Поле${pig} (${d.cities} ${pluralRu(d.cities, ['завершённый город', 'завершённых города', 'завершённых городов'])}${castles})`
     }
     case 'castle':
       return `${FEATURE_EMOJI.castle} Замок (${d.value})`

@@ -312,14 +312,21 @@ function FieldForm({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [cities, setCities] = useState(1)
   const [pig, setPig] = useState(false)
+  const [castles, setCastles] = useState(0)
   return (
     <div>
       <NumberField label={t.completedCities} value={cities} onChange={setCities} />
+      <NumberField
+        label={`${FEATURE_EMOJI.castle} ${t.featureNames.castle}`}
+        value={castles}
+        onChange={setCastles}
+        min={0}
+      />
       <Toggle label={`${PIG_EMOJI} ${t.pig}`} checked={pig} onChange={setPig} />
       <p className="mt-1 text-xs text-white/40">{t.fieldHint}</p>
       <ApplyBar
-        amount={scoreField(cities, pig)}
-        desc={{ kind: 'field', cities, pig }}
+        amount={scoreField(cities, pig, castles)}
+        desc={{ kind: 'field', cities, pig, castles }}
         onApply={onApply}
       />
     </div>
