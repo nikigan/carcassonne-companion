@@ -97,6 +97,7 @@ export interface Strings {
   pig: string
   castleValue: string
   castleHint: string
+  useRecentScore: string
   goldIngots: string
   goldHint: string
   messageHint: string
@@ -181,6 +182,7 @@ const en: Strings = {
   castleValue: 'Feature value',
   castleHint:
     'Scores the points of the completed feature that triggered the castle.',
+  useRecentScore: 'Use a recent score',
   goldIngots: 'Gold ingots',
   goldHint:
     'Gold Mines: scored from the menu at game end (1–3 bars: 1 each, 4–6: 2, 7–9: 3, 10+: 4).',
@@ -285,6 +287,7 @@ const ru: Strings = {
   pig: 'Свинья',
   castleValue: 'Очки объекта',
   castleHint: 'Начисляет очки завершённого объекта, который активировал замок.',
+  useRecentScore: 'Выбрать из недавних',
   goldIngots: 'Слитки золота',
   goldHint:
     'Золотые жилы: подсчёт через меню в конце игры (1–3 слитка: по 1, 4–6: по 2, 7–9: по 3, 10+: по 4).',

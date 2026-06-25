@@ -21,6 +21,12 @@ interface Props {
 /** Delay (ms) before the leaderboard re-sorts after a score change. */
 const RESORT_DELAY = 3000
 
+/**
+ * Score-log kinds a castle can take its value from: completed features, plus
+ * another castle (a scored castle can itself trigger an adjacent one).
+ */
+const FEATURE_DESC_KINDS = new Set(['road', 'city', 'cloister', 'field', 'castle'])
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -99,6 +105,19 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
     state.players.find((p) => p.id === id)?.name ?? 'Unknown'
   const colorById = (id: string) =>
     state.players.find((p) => p.id === id)?.color ?? '#666'
+
+  // Recent feature scores a castle can borrow its value from: completed
+  // road/city/monastery/field entries (positive points), newest 5.
+  const recentFeatures = state.log
+    .filter((e) => FEATURE_DESC_KINDS.has(e.desc.kind) && e.amount > 0)
+    .slice(0, 5)
+    .map((e) => ({
+      id: e.id,
+      amount: e.amount,
+      desc: e.desc,
+      playerName: nameById(e.playerId),
+      playerColor: colorById(e.playerId),
+    }))
 
   return (
     <div className="mx-auto w-full max-w-md px-4 pb-10 pt-4">
@@ -207,6 +226,7 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
       {active && (
         <ScoreModal
           player={active}
+          recentFeatures={recentFeatures}
           onClose={() => setActiveId(null)}
           onScore={(amount, desc) => onScore(active.id, amount, desc)}
           onRecordTokens={(delta) => onRecordTokens(active.id, delta)}

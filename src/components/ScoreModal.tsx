@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Player, ScoreDescriptor, TokenDelta } from '../types'
 import { contrastText } from '../colors'
-import { useI18n } from '../i18n'
+import { formatDescriptor, useI18n } from '../i18n'
 import {
   CATHEDRAL_EMOJI,
   FEATURE_EMOJI,
@@ -17,8 +17,19 @@ import {
   type FeatureType,
 } from '../scoring'
 
+/** A recent feature score offered as a one-tap castle value. */
+export interface CastleEntry {
+  id: string
+  amount: number
+  desc: ScoreDescriptor
+  playerName: string
+  playerColor: string
+}
+
 interface Props {
   player: Player
+  /** Recent feature scores the castle can borrow its value from. */
+  recentFeatures: CastleEntry[]
   onClose: () => void
   onScore: (amount: number, desc: ScoreDescriptor) => void
   onRecordTokens: (delta: TokenDelta) => void
@@ -27,7 +38,7 @@ interface Props {
 type Tab = 'preset' | 'goods' | 'manual'
 
 /** Modal for adding points to a player via Carcassonne presets or manual entry. */
-export function ScoreModal({ player, onClose, onScore, onRecordTokens }: Props) {
+export function ScoreModal({ player, recentFeatures, onClose, onScore, onRecordTokens }: Props) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('preset')
 
@@ -85,7 +96,7 @@ export function ScoreModal({ player, onClose, onScore, onRecordTokens }: Props) 
           ))}
         </div>
 
-        {tab === 'preset' && <PresetForms onApply={apply} />}
+        {tab === 'preset' && <PresetForms onApply={apply} recentFeatures={recentFeatures} />}
         {tab === 'goods' && (
           <GoodsForm
             onRecord={(delta) => {
@@ -102,7 +113,13 @@ export function ScoreModal({ player, onClose, onScore, onRecordTokens }: Props) 
 
 type ApplyFn = (amount: number, desc: ScoreDescriptor) => void
 
-function PresetForms({ onApply }: { onApply: ApplyFn }) {
+function PresetForms({
+  onApply,
+  recentFeatures,
+}: {
+  onApply: ApplyFn
+  recentFeatures: CastleEntry[]
+}) {
   const { t } = useI18n()
   const [feature, setFeature] = useState<FeatureType>('road')
 
@@ -138,7 +155,9 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
       {feature === 'city' && <CityForm onApply={onApply} />}
       {feature === 'cloister' && <CloisterForm onApply={onApply} />}
       {feature === 'field' && <FieldForm onApply={onApply} />}
-      {feature === 'castle' && <CastleForm onApply={onApply} />}
+      {feature === 'castle' && (
+        <CastleForm onApply={onApply} recentFeatures={recentFeatures} />
+      )}
       {feature === 'message' && <MessageForm onApply={onApply} />}
     </div>
   )
@@ -333,14 +352,50 @@ function FieldForm({ onApply }: { onApply: ApplyFn }) {
   )
 }
 
-function CastleForm({ onApply }: { onApply: ApplyFn }) {
-  const { t } = useI18n()
+function CastleForm({
+  onApply,
+  recentFeatures,
+}: {
+  onApply: ApplyFn
+  recentFeatures: CastleEntry[]
+}) {
+  const { t, lang } = useI18n()
   const [value, setValue] = useState(4)
   return (
     <div>
       <NumberField label={t.castleValue} value={value} onChange={setValue} min={0} />
       <p className="mt-1 text-xs text-white/40">{t.castleHint}</p>
       <ApplyBar amount={scoreCastle(value)} desc={{ kind: 'castle', value }} onApply={onApply} />
+
+      {recentFeatures.length > 0 && (
+        <div className="mt-4">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+            {t.useRecentScore}
+          </h4>
+          <ul className="space-y-1.5">
+            {recentFeatures.map((e) => (
+              <li key={e.id}>
+                <button
+                  onClick={() => onApply(e.amount, { kind: 'castle', value: e.amount })}
+                  className="flex w-full items-center gap-2.5 rounded-lg bg-white/5 px-3 py-2 text-left text-sm transition hover:bg-white/10 active:scale-[0.99]"
+                >
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: e.playerColor }}
+                  />
+                  <span className="font-medium">{e.playerName}</span>
+                  <span className="min-w-0 flex-1 truncate text-white/50">
+                    {formatDescriptor(e.desc, lang)}
+                  </span>
+                  <span className="shrink-0 font-bold tabular-nums text-emerald-400">
+                    +{e.amount}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
