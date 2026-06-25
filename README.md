@@ -1,0 +1,52 @@
+# 🏰 Carcassonne Companion
+
+A mobile-first web app for keeping score in the board game
+**Carcassonne**. Add your players, give each one a color, and track points as
+you play — with quick-add helpers that do the Carcassonne math for you.
+
+## Features
+
+- **Players & colors** — add any number of players. Pick from the standard
+  Carcassonne meeple colors (red, blue, yellow, green, black, plus the pink and
+  gray expansion colors) or choose any **custom color** with the color picker.
+- **Two ways to score**
+  - **Running tally** — `+`/`−` buttons on each player and a manual entry pad
+    (with quick amounts) for any house rules.
+  - **Carcassonne presets** — pick a feature and the app computes the points:
+    - **Road** — 1 per tile
+    - **City** — 2 per tile + 2 per pennant when completed; 1 each at game end
+    - **Cloister** — 1 + 1 per surrounding tile (9 when complete)
+    - **Field** — 3 per completed city it borders (game end)
+- **Live scoreboard** — players are ranked by score, with a 👑 on the leader.
+- **Score log** — every change is recorded with who/what/how many, and any
+  entry can be **undone** (which corrects the score).
+- **Auto-save** — the current game is saved to your browser's `localStorage`,
+  so a refresh or accidental close won't lose your scores.
+- **Game menu** — edit players mid-game, reset scores, or start a new game.
+
+## Getting started
+
+```bash
+npm install      # install dependencies
+npm run dev      # start the dev server (http://localhost:5173)
+npm run build    # type-check and build for production into dist/
+npm run preview  # preview the production build
+```
+
+## Tech stack
+
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/) for the build/dev server
+- [Tailwind CSS v4](https://tailwindcss.com/) for styling
+
+## How scoring works
+
+Most points are best entered the moment a feature is completed during play.
+Open a player's **Score** dialog, choose the **Features** tab, pick the feature
+type and fill in the tile/pennant counts — the dialog shows the computed total
+before you confirm. Fields and incomplete cities/roads are typically scored at
+the **end of the game**; toggle "Completed" off on cities to score them at the
+end-game rate. For anything unusual, the **Manual** tab adds or subtracts a raw
+amount.
+
+All state lives entirely in the browser — there is no backend and no account.
