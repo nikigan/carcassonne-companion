@@ -151,21 +151,21 @@ const en: Strings = {
   featureNames: {
     road: 'Road',
     city: 'City',
-    cloister: 'Cloister',
+    cloister: 'Monastery',
     field: 'Field',
     castle: 'Castle',
     gold: 'Gold',
     message: 'Message',
   },
   tiles: 'Tiles',
-  pennants: 'Pennants',
+  pennants: 'Coat of arms',
   completed: 'Completed',
   surroundingTiles: 'Surrounding tiles',
   completedCities: 'Completed cities',
   roadHint: '1 point per tile. With an inn: 2 per tile when completed, 0 if not.',
   cityHint:
-    'Completed: 2 per tile + 2 per pennant. Cathedral: 3 each when completed, 0 if not.',
-  cloisterHint: '1 for the cloister + 1 per surrounding tile (max 9).',
+    'Completed: 2 per tile + 2 per coat of arms. Cathedral: 3 each when completed, 0 if not.',
+  cloisterHint: '1 for the monastery + 1 per surrounding tile (max 9).',
   fieldHint:
     'Game end: 3 points per completed city it borders (4 with a pig).',
   currentScore: (score) => `Current: ${score} ${pluralEn(score, 'pt', 'pts')}`,
@@ -224,7 +224,7 @@ const en: Strings = {
 }
 
 // Russian uses the official Carcassonne (Hobby World) rule terms:
-// Дорога, Город, Монастырь, Луг, герб (pennant), тайл (tile).
+// Дорога, Город, Монастырь, Поле, щит (pennant/shield), тайл (tile).
 const ru: Strings = {
   appTitle: 'Каркассон',
   appSubtitle: 'Помощник',
@@ -253,20 +253,20 @@ const ru: Strings = {
     road: 'Дорога',
     city: 'Город',
     cloister: 'Монастырь',
-    field: 'Луг',
+    field: 'Поле',
     castle: 'Замок',
     gold: 'Золото',
     message: 'Послание',
   },
   tiles: 'Тайлы',
-  pennants: 'Гербы',
+  pennants: 'Щиты',
   completed: 'Завершён',
   surroundingTiles: 'Тайлы вокруг',
   completedCities: 'Завершённые города',
   roadHint:
     '1 очко за тайл. С трактиром: 2 за тайл если завершена, иначе 0.',
   cityHint:
-    'Завершённый: 2 за тайл + 2 за герб. С собором: по 3 если завершён, иначе 0.',
+    'Завершённый: 2 за тайл + 2 за щит. С собором: по 3 если завершён, иначе 0.',
   cloisterHint:
     '1 за монастырь + 1 за каждый соседний тайл (максимум 9).',
   fieldHint:
@@ -349,7 +349,7 @@ function formatEn(d: ScoreDescriptor): string {
       const t = d.tiles
       const penn =
         d.pennants > 0
-          ? `, ${d.pennants} ${pluralEn(d.pennants, 'pennant', 'pennants')}`
+          ? `, ${d.pennants} ${pluralEn(d.pennants, 'coat of arms', 'coats of arms')}`
           : ''
       const cath = d.cathedral ? ` ${CATHEDRAL_EMOJI}` : ''
       const state = d.completed ? 'completed' : 'incomplete'
@@ -357,8 +357,8 @@ function formatEn(d: ScoreDescriptor): string {
     }
     case 'cloister':
       return d.completed
-        ? `${FEATURE_EMOJI.cloister} Cloister completed (9)`
-        : `${FEATURE_EMOJI.cloister} Cloister (${d.surrounding} surrounding ${pluralEn(d.surrounding, 'tile', 'tiles')})`
+        ? `${FEATURE_EMOJI.cloister} Monastery completed (9)`
+        : `${FEATURE_EMOJI.cloister} Monastery (${d.surrounding} surrounding ${pluralEn(d.surrounding, 'tile', 'tiles')})`
     case 'field': {
       const pig = d.pig ? ` ${PIG_EMOJI}` : ''
       return `${FEATURE_EMOJI.field} Field${pig} (${d.cities} completed ${pluralEn(d.cities, 'city', 'cities')})`
@@ -391,7 +391,7 @@ function formatRu(d: ScoreDescriptor): string {
       const t = d.tiles
       const penn =
         d.pennants > 0
-          ? `, ${d.pennants} ${pluralRu(d.pennants, ['герб', 'герба', 'гербов'])}`
+          ? `, ${d.pennants} ${pluralRu(d.pennants, ['щит', 'щита', 'щитов'])}`
           : ''
       const cath = d.cathedral ? ` ${CATHEDRAL_EMOJI}` : ''
       const state = d.completed ? 'завершён' : 'незавершён'
@@ -403,7 +403,7 @@ function formatRu(d: ScoreDescriptor): string {
         : `${FEATURE_EMOJI.cloister} Монастырь (${d.surrounding} ${pluralRu(d.surrounding, ['тайл', 'тайла', 'тайлов'])} вокруг)`
     case 'field': {
       const pig = d.pig ? ` ${PIG_EMOJI}` : ''
-      return `${FEATURE_EMOJI.field} Луг${pig} (${d.cities} ${pluralRu(d.cities, ['завершённый город', 'завершённых города', 'завершённых городов'])})`
+      return `${FEATURE_EMOJI.field} Поле${pig} (${d.cities} ${pluralRu(d.cities, ['завершённый город', 'завершённых города', 'завершённых городов'])})`
     }
     case 'castle':
       return `${FEATURE_EMOJI.castle} Замок (${d.value})`

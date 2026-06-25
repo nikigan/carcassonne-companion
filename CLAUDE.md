@@ -66,8 +66,11 @@ when the language changes — preserve this pattern.
 No hard-coded UI strings in components. Add a key to the `Strings` interface in
 `src/i18n.ts` and provide **both** `en` and `ru` values (TypeScript enforces
 completeness). Russian uses the **official Carcassonne rule terms**, not literal
-translations (Дорога, Город, Монастырь, Луг, герб, тайл, Трактир, Собор, Свинья,
-Замок, Золото, Послание) with correct 3-form pluralization (`pluralRu`).
+translations (Дорога, Город, Монастырь, Поле, щит, тайл, Трактир, Собор, Свинья,
+Замок, Золото, Послание) with correct 3-form pluralization (`pluralRu`). These
+match the Hobby World 2019 "Новое издание" rulebook (поле, щит — not луг, герб),
+**except** "тайл" is kept as the familiar community term for the rulebook's
+"квадрат". English matches the Z-Man new edition (Monastery, coat of arms).
 
 ### Adding a feature / expansion scoring
 1. `scoring.ts`: add a pure `scoreX(...)` returning points (+ any emoji).
