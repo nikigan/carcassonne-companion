@@ -40,6 +40,9 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Enable Pages (with GitHub Actions as the source) if it isn't already.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
