@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/carcassonne-companion-app-fw4r74
   # Allow manual runs from the Actions tab.
   workflow_dispatch:
 
