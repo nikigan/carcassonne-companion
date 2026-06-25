@@ -33,6 +33,20 @@ npm run build    # type-check and build for production into dist/
 npm run preview  # preview the production build
 ```
 
+## Deployment (GitHub Pages)
+
+The app deploys automatically to GitHub Pages via the workflow in
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). On every push to
+the deploy branch it builds the site and publishes `dist/`.
+
+Once published it is served at:
+
+**https://nikigan.github.io/carcassonne-companion/**
+
+One-time setup in the repository: **Settings → Pages → Build and deployment →
+Source: GitHub Actions**. The site's base path is configured as
+`/carcassonne-companion/` in [`vite.config.ts`](vite.config.ts).
+
 ## Tech stack
 
 - [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
