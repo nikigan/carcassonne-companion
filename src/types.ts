@@ -6,12 +6,24 @@ export interface Player {
   score: number
 }
 
+/**
+ * Structured description of a single scoring action. Stored instead of a
+ * pre-rendered string so the score log can be re-localized on the fly when the
+ * language changes.
+ */
+export type ScoreDescriptor =
+  | { kind: 'road'; tiles: number }
+  | { kind: 'city'; tiles: number; pennants: number; completed: boolean }
+  | { kind: 'cloister'; surrounding: number; completed: boolean }
+  | { kind: 'field'; cities: number }
+  | { kind: 'manual'; amount: number }
+
 export interface ScoreEntry {
   id: string
   playerId: string
   amount: number
-  /** Human-readable description of what was scored, e.g. "City (4 tiles, 1 pennant)" */
-  label: string
+  /** What was scored. Formatted for display via the active language. */
+  desc: ScoreDescriptor
   timestamp: number
 }
 

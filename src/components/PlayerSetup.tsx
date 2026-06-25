@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Player } from '../types'
 import { contrastText, nextAvailableColor } from '../colors'
+import { useI18n } from '../i18n'
 import { ColorPicker } from './ColorPicker'
 
 interface Props {
@@ -13,12 +14,13 @@ interface Props {
 
 /** Pre-game screen: add/edit/remove players and their colors, then start. */
 export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Props) {
+  const { t } = useI18n()
   const usedHexes = players.map((p) => p.color)
   const [name, setName] = useState('')
   const [color, setColor] = useState(() => nextAvailableColor(usedHexes))
 
   const submit = () => {
-    onAdd(name, color)
+    onAdd(name.trim() || t.defaultPlayerName(players.length + 1), color)
     setName('')
     // Advance to the next free color so back-to-back adds don't collide.
     setColor(nextAvailableColor([...usedHexes, color]))
@@ -26,10 +28,8 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
 
   return (
     <div className="mx-auto w-full max-w-md px-4 pb-28 pt-6">
-      <h2 className="mb-1 text-2xl font-bold">Players</h2>
-      <p className="mb-5 text-sm text-white/60">
-        Add everyone playing and pick a color for each.
-      </p>
+      <h2 className="mb-1 text-2xl font-bold">{t.playersHeading}</h2>
+      <p className="mb-5 text-sm text-white/60">{t.playersHint}</p>
 
       <ul className="mb-5 space-y-2">
         {players.map((p) => (
@@ -47,11 +47,11 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
               value={p.name}
               onChange={(e) => onUpdate(p.id, { name: e.target.value })}
               className="min-w-0 flex-1 bg-transparent text-base font-medium outline-none"
-              aria-label="Player name"
+              aria-label={t.playerNameAria}
             />
             <details className="relative">
               <summary className="cursor-pointer list-none rounded-lg px-2 py-1 text-xs text-white/60 hover:bg-white/10">
-                Color
+                {t.colorLabel}
               </summary>
               <div className="absolute right-0 z-10 mt-2 w-64 rounded-xl border border-white/10 bg-gray-800 p-3 shadow-xl">
                 <ColorPicker
@@ -65,7 +65,7 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
               type="button"
               onClick={() => onRemove(p.id)}
               className="rounded-lg px-2 py-1 text-white/40 hover:bg-white/10 hover:text-red-400"
-              aria-label={`Remove ${p.name}`}
+              aria-label={t.removePlayerAria(p.name)}
             >
               ✕
             </button>
@@ -73,7 +73,7 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
         ))}
         {players.length === 0 && (
           <li className="rounded-xl border border-dashed border-white/10 p-4 text-center text-sm text-white/40">
-            No players yet — add your first below.
+            {t.noPlayers}
           </li>
         )}
       </ul>
@@ -84,7 +84,7 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder="Player name"
+            placeholder={t.playerNamePlaceholder}
             className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-base outline-none ring-1 ring-white/10 focus:ring-white/30"
           />
           <button
@@ -92,7 +92,7 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
             onClick={submit}
             className="shrink-0 rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-white transition hover:bg-emerald-400 active:scale-95"
           >
-            Add
+            {t.add}
           </button>
         </div>
         <ColorPicker value={color} onChange={setColor} usedHexes={usedHexes} />
@@ -105,7 +105,7 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
           disabled={players.length === 0}
           className="mx-auto block w-full max-w-md rounded-xl bg-amber-500 py-3 text-lg font-bold text-gray-900 transition enabled:hover:bg-amber-400 enabled:active:scale-[0.98] disabled:opacity-40"
         >
-          Start game
+          {t.startGame}
         </button>
       </div>
     </div>

@@ -1,29 +1,31 @@
 import { useState } from 'react'
-import type { Player } from '../types'
+import type { Player, ScoreDescriptor } from '../types'
 import { contrastText } from '../colors'
+import { useI18n } from '../i18n'
 import {
+  FEATURE_EMOJI,
   scoreCity,
   scoreCloister,
   scoreField,
   scoreRoad,
   type FeatureType,
-  type PresetResult,
 } from '../scoring'
 
 interface Props {
   player: Player
   onClose: () => void
-  onScore: (amount: number, label: string) => void
+  onScore: (amount: number, desc: ScoreDescriptor) => void
 }
 
 type Tab = 'preset' | 'manual'
 
 /** Modal for adding points to a player via Carcassonne presets or manual entry. */
 export function ScoreModal({ player, onClose, onScore }: Props) {
+  const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('preset')
 
-  const apply = (result: PresetResult) => {
-    onScore(result.amount, result.label)
+  const apply = (amount: number, desc: ScoreDescriptor) => {
+    onScore(amount, desc)
     onClose()
   }
 
@@ -45,12 +47,12 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
           </span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-lg font-bold">{player.name}</div>
-            <div className="text-sm text-white/50">Current: {player.score} pts</div>
+            <div className="text-sm text-white/50">{t.currentScore(player.score)}</div>
           </div>
           <button
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-white/50 hover:bg-white/10"
-            aria-label="Close"
+            aria-label={t.close}
           >
             ✕
           </button>
@@ -63,7 +65,7 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
               tab === 'preset' ? 'bg-white/15' : 'text-white/50'
             }`}
           >
-            Features
+            {t.featuresTab}
           </button>
           <button
             onClick={() => setTab('manual')}
@@ -71,7 +73,7 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
               tab === 'manual' ? 'bg-white/15' : 'text-white/50'
             }`}
           >
-            Manual
+            {`${FEATURE_EMOJI.manual} ${t.manualTab}`}
           </button>
         </div>
 
@@ -85,30 +87,29 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
   )
 }
 
-function PresetForms({ onApply }: { onApply: (r: PresetResult) => void }) {
+type ApplyFn = (amount: number, desc: ScoreDescriptor) => void
+
+function PresetForms({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [feature, setFeature] = useState<FeatureType>('road')
 
-  const features: { key: FeatureType; label: string }[] = [
-    { key: 'road', label: 'Road' },
-    { key: 'city', label: 'City' },
-    { key: 'cloister', label: 'Cloister' },
-    { key: 'field', label: 'Field' },
-  ]
+  const features: FeatureType[] = ['road', 'city', 'cloister', 'field']
 
   return (
     <div>
       <div className="mb-4 grid grid-cols-4 gap-1.5">
-        {features.map((f) => (
+        {features.map((key) => (
           <button
-            key={f.key}
-            onClick={() => setFeature(f.key)}
-            className={`rounded-lg py-2 text-sm font-medium transition ${
-              feature === f.key
+            key={key}
+            onClick={() => setFeature(key)}
+            className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-medium transition ${
+              feature === key
                 ? 'bg-amber-500 text-gray-900'
                 : 'bg-white/5 text-white/70 hover:bg-white/10'
             }`}
           >
-            {f.label}
+            <span className="text-xl leading-none">{FEATURE_EMOJI[key]}</span>
+            {t.featureNames[key]}
           </button>
         ))}
       </div>
@@ -132,6 +133,7 @@ function NumberField({
   onChange: (n: number) => void
   min?: number
 }) {
+  const { t } = useI18n()
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
       <span className="text-sm text-white/80">{label}</span>
@@ -139,7 +141,7 @@ function NumberField({
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
           className="h-9 w-9 rounded-lg bg-white/10 text-lg font-bold hover:bg-white/20 active:scale-95"
-          aria-label={`Decrease ${label}`}
+          aria-label={t.decreaseAria(label)}
         >
           −
         </button>
@@ -153,7 +155,7 @@ function NumberField({
         <button
           onClick={() => onChange(value + 1)}
           className="h-9 w-9 rounded-lg bg-white/10 text-lg font-bold hover:bg-white/20 active:scale-95"
-          aria-label={`Increase ${label}`}
+          aria-label={t.increaseAria(label)}
         >
           +
         </button>
@@ -193,83 +195,103 @@ function Toggle({
   )
 }
 
-function ApplyBar({ result, onApply }: { result: PresetResult; onApply: (r: PresetResult) => void }) {
+function ApplyBar({
+  amount,
+  desc,
+  onApply,
+}: {
+  amount: number
+  desc: ScoreDescriptor
+  onApply: ApplyFn
+}) {
+  const { t } = useI18n()
   return (
     <button
-      onClick={() => onApply(result)}
+      onClick={() => onApply(amount, desc)}
       className="mt-4 w-full rounded-xl bg-emerald-500 py-3 text-lg font-bold text-white transition hover:bg-emerald-400 active:scale-[0.98]"
     >
-      Add {result.amount} {result.amount === 1 ? 'point' : 'points'}
+      {t.addPoints(amount)}
     </button>
   )
 }
 
-function RoadForm({ onApply }: { onApply: (r: PresetResult) => void }) {
+function RoadForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [tiles, setTiles] = useState(2)
   return (
     <div>
-      <NumberField label="Tiles" value={tiles} onChange={setTiles} min={1} />
-      <p className="mt-1 text-xs text-white/40">1 point per tile.</p>
-      <ApplyBar result={scoreRoad(tiles)} onApply={onApply} />
+      <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
+      <p className="mt-1 text-xs text-white/40">{t.roadHint}</p>
+      <ApplyBar amount={scoreRoad(tiles)} desc={{ kind: 'road', tiles }} onApply={onApply} />
     </div>
   )
 }
 
-function CityForm({ onApply }: { onApply: (r: PresetResult) => void }) {
+function CityForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [tiles, setTiles] = useState(2)
   const [pennants, setPennants] = useState(0)
   const [completed, setCompleted] = useState(true)
   return (
     <div>
-      <NumberField label="Tiles" value={tiles} onChange={setTiles} min={1} />
-      <NumberField label="Pennants" value={pennants} onChange={setPennants} />
-      <Toggle label="Completed" checked={completed} onChange={setCompleted} />
-      <p className="mt-1 text-xs text-white/40">
-        Completed: 2 per tile + 2 per pennant. Incomplete (game end): 1 each.
-      </p>
-      <ApplyBar result={scoreCity(tiles, pennants, completed)} onApply={onApply} />
+      <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
+      <NumberField label={t.pennants} value={pennants} onChange={setPennants} />
+      <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
+      <p className="mt-1 text-xs text-white/40">{t.cityHint}</p>
+      <ApplyBar
+        amount={scoreCity(tiles, pennants, completed)}
+        desc={{ kind: 'city', tiles, pennants, completed }}
+        onApply={onApply}
+      />
     </div>
   )
 }
 
-function CloisterForm({ onApply }: { onApply: (r: PresetResult) => void }) {
+function CloisterForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [surrounding, setSurrounding] = useState(8)
   const completed = surrounding >= 8
   return (
     <div>
       <NumberField
-        label="Surrounding tiles"
+        label={t.surroundingTiles}
         value={surrounding}
         onChange={(n) => setSurrounding(Math.min(8, n))}
       />
-      <p className="mt-1 text-xs text-white/40">
-        1 for the cloister + 1 per surrounding tile (max 9).
-      </p>
-      <ApplyBar result={scoreCloister(surrounding, completed)} onApply={onApply} />
+      <p className="mt-1 text-xs text-white/40">{t.cloisterHint}</p>
+      <ApplyBar
+        amount={scoreCloister(surrounding, completed)}
+        desc={{ kind: 'cloister', surrounding, completed }}
+        onApply={onApply}
+      />
     </div>
   )
 }
 
-function FieldForm({ onApply }: { onApply: (r: PresetResult) => void }) {
+function FieldForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [cities, setCities] = useState(1)
   return (
     <div>
-      <NumberField label="Completed cities" value={cities} onChange={setCities} />
-      <p className="mt-1 text-xs text-white/40">
-        Scored at game end: 3 points per completed city the field borders.
-      </p>
-      <ApplyBar result={scoreField(cities)} onApply={onApply} />
+      <NumberField label={t.completedCities} value={cities} onChange={setCities} />
+      <p className="mt-1 text-xs text-white/40">{t.fieldHint}</p>
+      <ApplyBar
+        amount={scoreField(cities)}
+        desc={{ kind: 'field', cities }}
+        onApply={onApply}
+      />
     </div>
   )
 }
 
-function ManualForm({ onApply }: { onApply: (r: PresetResult) => void }) {
+function ManualForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
   const [amount, setAmount] = useState(1)
 
   const submit = (sign: 1 | -1) => {
     const value = sign * Math.abs(amount)
     if (value === 0) return
-    onApply({ amount: value, label: `Manual ${value > 0 ? '+' : ''}${value}` })
+    onApply(value, { kind: 'manual', amount: value })
   }
 
   const quick = [1, 2, 3, 5, 10]
@@ -289,7 +311,7 @@ function ManualForm({ onApply }: { onApply: (r: PresetResult) => void }) {
           </button>
         ))}
       </div>
-      <NumberField label="Points" value={amount} onChange={setAmount} min={1} />
+      <NumberField label={t.points} value={amount} onChange={setAmount} min={1} />
       <div className="mt-4 grid grid-cols-2 gap-2">
         <button
           onClick={() => submit(-1)}

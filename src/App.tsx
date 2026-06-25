@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useGame } from './useGame'
+import { LANGUAGES, useI18n } from './i18n'
 import { PlayerSetup } from './components/PlayerSetup'
 import { Scoreboard } from './components/Scoreboard'
 
 export default function App() {
+  const { t, lang, setLang } = useI18n()
   const game = useGame()
   const { state } = game
   const [menuOpen, setMenuOpen] = useState(false)
@@ -22,56 +24,74 @@ export default function App() {
               🏰
             </span>
             <h1 className="text-lg font-bold leading-tight">
-              Carcassonne
+              {t.appTitle}
               <span className="block text-xs font-normal text-white/50">
-                Companion
+                {t.appSubtitle}
               </span>
             </h1>
           </div>
 
-          {state.started && (
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen((o) => !o)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10"
-              >
-                Menu ▾
-              </button>
-              {menuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-gray-800 shadow-xl">
-                    <MenuItem
-                      label="Edit players"
-                      onClick={() => {
-                        game.editPlayers()
-                        setMenuOpen(false)
-                      }}
-                    />
-                    <MenuItem
-                      label="Reset scores"
-                      onClick={() => {
-                        if (confirm('Reset all scores to zero?')) game.resetScores()
-                        setMenuOpen(false)
-                      }}
-                    />
-                    <MenuItem
-                      label="New game"
-                      danger
-                      onClick={() => {
-                        if (confirm('Start a new game? This clears players and scores.'))
-                          game.newGame()
-                        setMenuOpen(false)
-                      }}
-                    />
-                  </div>
-                </>
-              )}
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg bg-white/5 p-0.5 text-xs font-semibold">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`rounded-md px-2 py-1 transition ${
+                    lang === l.code
+                      ? 'bg-white/15 text-white'
+                      : 'text-white/50 hover:text-white/80'
+                  }`}
+                  aria-pressed={lang === l.code}
+                >
+                  {l.label}
+                </button>
+              ))}
             </div>
-          )}
+
+            {state.started && (
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10"
+                >
+                  {t.menu} ▾
+                </button>
+                {menuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-gray-800 shadow-xl">
+                      <MenuItem
+                        label={t.editPlayers}
+                        onClick={() => {
+                          game.editPlayers()
+                          setMenuOpen(false)
+                        }}
+                      />
+                      <MenuItem
+                        label={t.resetScores}
+                        onClick={() => {
+                          if (confirm(t.confirmReset)) game.resetScores()
+                          setMenuOpen(false)
+                        }}
+                      />
+                      <MenuItem
+                        label={t.newGame}
+                        danger
+                        onClick={() => {
+                          if (confirm(t.confirmNewGame)) game.newGame()
+                          setMenuOpen(false)
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -95,7 +115,7 @@ export default function App() {
 
       {state.started && leader && state.log.length > 0 && (
         <footer className="pb-8 text-center text-xs text-white/30">
-          {leader.name} leads with {leader.score} pts
+          {t.leads(leader.name, leader.score)}
         </footer>
       )}
     </div>

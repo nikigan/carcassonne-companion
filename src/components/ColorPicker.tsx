@@ -1,4 +1,5 @@
 import { DEFAULT_COLORS } from '../colors'
+import { useI18n } from '../i18n'
 
 interface Props {
   value: string
@@ -12,6 +13,7 @@ interface Props {
  * input. Selecting either updates `value`.
  */
 export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
+  const { t } = useI18n()
   const used = new Set(usedHexes.map((h) => h.toLowerCase()))
   const valueIsCustom = !DEFAULT_COLORS.some(
     (c) => c.hex.toLowerCase() === value.toLowerCase(),
@@ -22,12 +24,13 @@ export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
       {DEFAULT_COLORS.map((c) => {
         const selected = c.hex.toLowerCase() === value.toLowerCase()
         const taken = used.has(c.hex.toLowerCase()) && !selected
+        const name = t.colors[c.key]
         return (
           <button
             key={c.hex}
             type="button"
-            title={taken ? `${c.name} (in use)` : c.name}
-            aria-label={c.name}
+            title={taken ? t.inUse(name) : name}
+            aria-label={name}
             aria-pressed={selected}
             onClick={() => onChange(c.hex)}
             className={`relative h-9 w-9 rounded-full border-2 transition ${
@@ -50,7 +53,7 @@ export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
         className={`relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 ${
           valueIsCustom ? 'border-white ring-2 ring-white/70' : 'border-white/20'
         }`}
-        title="Custom color"
+        title={t.customColor}
         style={{
           background: valueIsCustom
             ? value
@@ -62,7 +65,7 @@ export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 cursor-pointer opacity-0"
-          aria-label="Choose a custom color"
+          aria-label={t.chooseCustom}
         />
         {!valueIsCustom && (
           <span className="pointer-events-none text-sm font-bold text-white drop-shadow">

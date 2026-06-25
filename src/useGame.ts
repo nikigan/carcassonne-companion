@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { GameState, Player, ScoreEntry } from './types'
+import type { GameState, Player, ScoreDescriptor, ScoreEntry } from './types'
 import { clearGame, emptyGame, loadGame, saveGame, uid } from './storage'
 
 /**
@@ -25,7 +25,7 @@ export function useGame() {
       ...s,
       players: [
         ...s.players,
-        { id: uid(), name: name.trim() || `Player ${s.players.length + 1}`, color, score: 0 },
+        { id: uid(), name: name.trim() || `#${s.players.length + 1}`, color, score: 0 },
       ],
     }))
   }, [])
@@ -57,23 +57,26 @@ export function useGame() {
     setState((s) => ({ ...s, started: false }))
   }, [])
 
-  const addScore = useCallback((playerId: string, amount: number, label: string) => {
-    if (!Number.isFinite(amount) || amount === 0) return
-    const entry: ScoreEntry = {
-      id: uid(),
-      playerId,
-      amount,
-      label,
-      timestamp: Date.now(),
-    }
-    setState((s) => ({
-      ...s,
-      players: s.players.map((p) =>
-        p.id === playerId ? { ...p, score: p.score + amount } : p,
-      ),
-      log: [entry, ...s.log],
-    }))
-  }, [])
+  const addScore = useCallback(
+    (playerId: string, amount: number, desc: ScoreDescriptor) => {
+      if (!Number.isFinite(amount) || amount === 0) return
+      const entry: ScoreEntry = {
+        id: uid(),
+        playerId,
+        amount,
+        desc,
+        timestamp: Date.now(),
+      }
+      setState((s) => ({
+        ...s,
+        players: s.players.map((p) =>
+          p.id === playerId ? { ...p, score: p.score + amount } : p,
+        ),
+        log: [entry, ...s.log],
+      }))
+    },
+    [],
+  )
 
   /** Undo a single log entry, reverting its effect on the player's score. */
   const undoEntry = useCallback((entryId: string) => {

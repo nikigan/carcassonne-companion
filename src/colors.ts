@@ -1,17 +1,26 @@
+export type ColorKey =
+  | 'red'
+  | 'blue'
+  | 'yellow'
+  | 'green'
+  | 'black'
+  | 'pink'
+  | 'gray'
+
 /** The standard Carcassonne meeple colors plus the common expansion colors. */
 export interface PaletteColor {
-  name: string
+  key: ColorKey
   hex: string
 }
 
 export const DEFAULT_COLORS: PaletteColor[] = [
-  { name: 'Red', hex: '#D33A2C' },
-  { name: 'Blue', hex: '#2C6FD3' },
-  { name: 'Yellow', hex: '#F2C037' },
-  { name: 'Green', hex: '#3FA34D' },
-  { name: 'Black', hex: '#2B2B2B' },
-  { name: 'Pink', hex: '#E86AA6' },
-  { name: 'Gray', hex: '#9AA0A6' },
+  { key: 'red', hex: '#D33A2C' },
+  { key: 'blue', hex: '#2C6FD3' },
+  { key: 'yellow', hex: '#F2C037' },
+  { key: 'green', hex: '#3FA34D' },
+  { key: 'black', hex: '#2B2B2B' },
+  { key: 'pink', hex: '#E86AA6' },
+  { key: 'gray', hex: '#9AA0A6' },
 ]
 
 /**

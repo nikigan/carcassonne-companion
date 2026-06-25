@@ -6,6 +6,14 @@ you play — with quick-add helpers that do the Carcassonne math for you.
 
 ## Features
 
+- **Bilingual (English / Russian)** — switch language any time from the header.
+  Russian uses the official Carcassonne rule terms (Дорога, Город, Монастырь,
+  Луг, герб, тайл) rather than literal translations, with correct Russian
+  pluralization. The whole UI — including past score-log entries — re-localizes
+  live, and your choice is remembered.
+- **Feature emojis** — each game feature has an icon: 🛣️ Road, 🏰 City,
+  ⛪ Cloister, 🌾 Field (and ✏️ for manual adjustments), shown on the scoring
+  buttons and throughout the score log.
 - **Players & colors** — add any number of players. Pick from the standard
   Carcassonne meeple colors (red, blue, yellow, green, black, plus the pink and
   gray expansion colors) or choose any **custom color** with the color picker.
