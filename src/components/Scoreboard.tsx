@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import type { GameState, ScoreDescriptor } from '../types'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import type { GameState, Player, ScoreDescriptor } from '../types'
 import { contrastText } from '../colors'
 import { formatDescriptor, useI18n } from '../i18n'
 import { ScoreModal } from './ScoreModal'
@@ -10,15 +10,82 @@ interface Props {
   onUndo: (entryId: string) => void
 }
 
+/** Delay (ms) before the leaderboard re-sorts after a score change. */
+const RESORT_DELAY = 3000
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+function sortedIds(players: Player[]): string[] {
+  return [...players].sort((a, b) => b.score - a.score).map((p) => p.id)
+}
+
 /** The in-game view: ranked player cards + quick actions + score log. */
 export function Scoreboard({ state, onScore, onUndo }: Props) {
   const { t, lang } = useI18n()
   const [activeId, setActiveId] = useState<string | null>(null)
   const active = state.players.find((p) => p.id === activeId) ?? null
 
-  // Rank by score (desc), keeping original order for ties.
-  const ranked = [...state.players].sort((a, b) => b.score - a.score)
-  const leadScore = ranked.length ? ranked[0].score : 0
+  // Display order lags behind the true ranking: it re-sorts only after scores
+  // have been quiet for RESORT_DELAY, so the list doesn't jump on every tap.
+  const [orderIds, setOrderIds] = useState<string[]>(() => sortedIds(state.players))
+
+  useEffect(() => {
+    const target = sortedIds(state.players)
+    const currentSet = new Set(orderIds)
+    const targetSet = new Set(target)
+    const membershipChanged =
+      orderIds.length !== target.length ||
+      target.some((id) => !currentSet.has(id))
+
+    // Players added/removed (e.g. via "Edit players") — reconcile immediately.
+    if (membershipChanged || orderIds.some((id) => !targetSet.has(id))) {
+      setOrderIds(target)
+      return
+    }
+
+    // Same players, but a score may have changed: debounce the re-sort.
+    if (orderIds.every((id, i) => id === target[i])) return
+    const timer = setTimeout(() => setOrderIds(target), RESORT_DELAY)
+    return () => clearTimeout(timer)
+  }, [state.players, orderIds])
+
+  const orderedPlayers = orderIds
+    .map((id) => state.players.find((p) => p.id === id))
+    .filter((p): p is Player => Boolean(p))
+
+  // Crown the current leader by actual score, even before the list settles.
+  const leadScore = state.players.reduce((m, p) => Math.max(m, p.score), 0)
+
+  // FLIP animation: slide each card from its previous position to the new one
+  // whenever the display order changes.
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const prevTops = useRef<Map<string, number>>(new Map())
+
+  useLayoutEffect(() => {
+    const refs = cardRefs.current
+    const nextTops = new Map<string, number>()
+    refs.forEach((el, id) => nextTops.set(id, el.getBoundingClientRect().top))
+
+    if (!prefersReducedMotion()) {
+      refs.forEach((el, id) => {
+        const prev = prevTops.current.get(id)
+        const next = nextTops.get(id)
+        if (prev == null || next == null || prev === next) return
+        // Invert: jump back to the old spot with no transition…
+        el.style.transition = 'none'
+        el.style.transform = `translateY(${prev - next}px)`
+        // …then play: animate to the natural position on the next frame.
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 350ms cubic-bezier(0.2, 0, 0, 1)'
+          el.style.transform = ''
+        })
+      })
+    }
+
+    prevTops.current = nextTops
+  }, [orderIds])
 
   const nameById = (id: string) =>
     state.players.find((p) => p.id === id)?.name ?? 'Unknown'
@@ -28,12 +95,16 @@ export function Scoreboard({ state, onScore, onUndo }: Props) {
   return (
     <div className="mx-auto w-full max-w-md px-4 pb-10 pt-4">
       <div className="space-y-2.5">
-        {ranked.map((p, i) => {
+        {orderedPlayers.map((p, i) => {
           const isLeader = p.score === leadScore && leadScore > 0
           return (
             <div
               key={p.id}
-              className="flex items-center gap-3 rounded-2xl bg-white/5 p-3"
+              ref={(el) => {
+                if (el) cardRefs.current.set(p.id, el)
+                else cardRefs.current.delete(p.id)
+              }}
+              className="flex items-center gap-3 rounded-2xl bg-white/5 p-3 will-change-transform"
             >
               <span className="w-5 text-center text-sm font-bold text-white/40">
                 {i + 1}
