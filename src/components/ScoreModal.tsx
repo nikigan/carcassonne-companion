@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import type { Player, ScoreDescriptor } from '../types'
+import type { Player, ScoreDescriptor, TradeGoods } from '../types'
 import { contrastText } from '../colors'
 import { useI18n } from '../i18n'
 import {
+  CATHEDRAL_EMOJI,
   FEATURE_EMOJI,
+  GOODS_EMOJI,
+  INN_EMOJI,
+  PIG_EMOJI,
+  scoreCastle,
   scoreCity,
   scoreCloister,
   scoreField,
@@ -15,12 +20,13 @@ interface Props {
   player: Player
   onClose: () => void
   onScore: (amount: number, desc: ScoreDescriptor) => void
+  onAddGoods: (delta: Partial<TradeGoods>) => void
 }
 
-type Tab = 'preset' | 'manual'
+type Tab = 'preset' | 'goods' | 'manual'
 
 /** Modal for adding points to a player via Carcassonne presets or manual entry. */
-export function ScoreModal({ player, onClose, onScore }: Props) {
+export function ScoreModal({ player, onClose, onScore, onAddGoods }: Props) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('preset')
 
@@ -28,6 +34,12 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
     onScore(amount, desc)
     onClose()
   }
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'preset', label: t.featuresTab },
+    { key: 'goods', label: `${GOODS_EMOJI.wine} ${t.goodsTab}` },
+    { key: 'manual', label: `${FEATURE_EMOJI.manual} ${t.manualTab}` },
+  ]
 
   return (
     <div
@@ -58,30 +70,30 @@ export function ScoreModal({ player, onClose, onScore }: Props) {
           </button>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-black/30 p-1 text-sm font-medium">
-          <button
-            onClick={() => setTab('preset')}
-            className={`rounded-lg py-2 transition ${
-              tab === 'preset' ? 'bg-white/15' : 'text-white/50'
-            }`}
-          >
-            {t.featuresTab}
-          </button>
-          <button
-            onClick={() => setTab('manual')}
-            className={`rounded-lg py-2 transition ${
-              tab === 'manual' ? 'bg-white/15' : 'text-white/50'
-            }`}
-          >
-            {`${FEATURE_EMOJI.manual} ${t.manualTab}`}
-          </button>
+        <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-black/30 p-1 text-sm font-medium">
+          {tabs.map((tb) => (
+            <button
+              key={tb.key}
+              onClick={() => setTab(tb.key)}
+              className={`rounded-lg py-2 transition ${
+                tab === tb.key ? 'bg-white/15' : 'text-white/50'
+              }`}
+            >
+              {tb.label}
+            </button>
+          ))}
         </div>
 
-        {tab === 'preset' ? (
-          <PresetForms onApply={apply} />
-        ) : (
-          <ManualForm onApply={apply} />
+        {tab === 'preset' && <PresetForms onApply={apply} />}
+        {tab === 'goods' && (
+          <GoodsForm
+            onRecord={(delta) => {
+              onAddGoods(delta)
+              onClose()
+            }}
+          />
         )}
+        {tab === 'manual' && <ManualForm onApply={apply} />}
       </div>
     </div>
   )
@@ -93,11 +105,11 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [feature, setFeature] = useState<FeatureType>('road')
 
-  const features: FeatureType[] = ['road', 'city', 'cloister', 'field']
+  const features: FeatureType[] = ['road', 'city', 'cloister', 'field', 'castle']
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-4 gap-1.5">
+      <div className="mb-4 grid grid-cols-3 gap-1.5">
         {features.map((key) => (
           <button
             key={key}
@@ -118,6 +130,7 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
       {feature === 'city' && <CityForm onApply={onApply} />}
       {feature === 'cloister' && <CloisterForm onApply={onApply} />}
       {feature === 'field' && <FieldForm onApply={onApply} />}
+      {feature === 'castle' && <CastleForm onApply={onApply} />}
     </div>
   )
 }
@@ -174,14 +187,16 @@ function Toggle({
   onChange: (v: boolean) => void
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between py-1.5">
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="flex w-full cursor-pointer items-center justify-between py-1.5 text-left"
+    >
       <span className="text-sm text-white/80">{label}</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition ${
+      <span
+        className={`relative h-6 w-11 shrink-0 rounded-full transition ${
           checked ? 'bg-emerald-500' : 'bg-white/20'
         }`}
       >
@@ -190,8 +205,8 @@ function Toggle({
             checked ? 'left-[1.375rem]' : 'left-0.5'
           }`}
         />
-      </button>
-    </label>
+      </span>
+    </button>
   )
 }
 
@@ -218,11 +233,21 @@ function ApplyBar({
 function RoadForm({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [tiles, setTiles] = useState(2)
+  const [inn, setInn] = useState(false)
+  const [completed, setCompleted] = useState(true)
   return (
     <div>
       <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
+      <Toggle label={`${INN_EMOJI} ${t.inn}`} checked={inn} onChange={setInn} />
+      {inn && (
+        <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
+      )}
       <p className="mt-1 text-xs text-white/40">{t.roadHint}</p>
-      <ApplyBar amount={scoreRoad(tiles)} desc={{ kind: 'road', tiles }} onApply={onApply} />
+      <ApplyBar
+        amount={scoreRoad(tiles, completed, inn)}
+        desc={{ kind: 'road', tiles, completed, inn }}
+        onApply={onApply}
+      />
     </div>
   )
 }
@@ -232,15 +257,21 @@ function CityForm({ onApply }: { onApply: ApplyFn }) {
   const [tiles, setTiles] = useState(2)
   const [pennants, setPennants] = useState(0)
   const [completed, setCompleted] = useState(true)
+  const [cathedral, setCathedral] = useState(false)
   return (
     <div>
       <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
       <NumberField label={t.pennants} value={pennants} onChange={setPennants} />
       <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
+      <Toggle
+        label={`${CATHEDRAL_EMOJI} ${t.cathedral}`}
+        checked={cathedral}
+        onChange={setCathedral}
+      />
       <p className="mt-1 text-xs text-white/40">{t.cityHint}</p>
       <ApplyBar
-        amount={scoreCity(tiles, pennants, completed)}
-        desc={{ kind: 'city', tiles, pennants, completed }}
+        amount={scoreCity(tiles, pennants, completed, cathedral)}
+        desc={{ kind: 'city', tiles, pennants, completed, cathedral }}
         onApply={onApply}
       />
     </div>
@@ -271,15 +302,53 @@ function CloisterForm({ onApply }: { onApply: ApplyFn }) {
 function FieldForm({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [cities, setCities] = useState(1)
+  const [pig, setPig] = useState(false)
   return (
     <div>
       <NumberField label={t.completedCities} value={cities} onChange={setCities} />
+      <Toggle label={`${PIG_EMOJI} ${t.pig}`} checked={pig} onChange={setPig} />
       <p className="mt-1 text-xs text-white/40">{t.fieldHint}</p>
       <ApplyBar
-        amount={scoreField(cities)}
-        desc={{ kind: 'field', cities }}
+        amount={scoreField(cities, pig)}
+        desc={{ kind: 'field', cities, pig }}
         onApply={onApply}
       />
+    </div>
+  )
+}
+
+function CastleForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [value, setValue] = useState(4)
+  return (
+    <div>
+      <NumberField label={t.castleValue} value={value} onChange={setValue} min={0} />
+      <p className="mt-1 text-xs text-white/40">{t.castleHint}</p>
+      <ApplyBar amount={scoreCastle(value)} desc={{ kind: 'castle', value }} onApply={onApply} />
+    </div>
+  )
+}
+
+function GoodsForm({ onRecord }: { onRecord: (delta: Partial<TradeGoods>) => void }) {
+  const { t } = useI18n()
+  const [wine, setWine] = useState(0)
+  const [grain, setGrain] = useState(0)
+  const [cloth, setCloth] = useState(0)
+  const total = wine + grain + cloth
+
+  return (
+    <div>
+      <NumberField label={`${GOODS_EMOJI.wine} ${t.goodNames.wine}`} value={wine} onChange={setWine} />
+      <NumberField label={`${GOODS_EMOJI.grain} ${t.goodNames.grain}`} value={grain} onChange={setGrain} />
+      <NumberField label={`${GOODS_EMOJI.cloth} ${t.goodNames.cloth}`} value={cloth} onChange={setCloth} />
+      <p className="mt-1 text-xs text-white/40">{t.goodsTabHint}</p>
+      <button
+        disabled={total === 0}
+        onClick={() => onRecord({ wine, grain, cloth })}
+        className="mt-4 w-full rounded-xl bg-emerald-500 py-3 text-lg font-bold text-white transition enabled:hover:bg-emerald-400 enabled:active:scale-[0.98] disabled:opacity-40"
+      >
+        {t.recordGoods}
+      </button>
     </div>
   )
 }

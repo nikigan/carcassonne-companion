@@ -1,4 +1,5 @@
-import type { GameState, ScoreEntry } from './types'
+import type { GameState, Player, ScoreEntry } from './types'
+import { emptyGoods } from './types'
 
 const STORAGE_KEY = 'carcassonne-companion:game'
 
@@ -16,7 +17,7 @@ export function loadGame(): GameState {
     if (!parsed || !Array.isArray(parsed.players)) return emptyGame
     const log = Array.isArray(parsed.log) ? parsed.log.map(migrateEntry) : []
     return {
-      players: parsed.players,
+      players: parsed.players.map(migratePlayer),
       log,
       started: Boolean(parsed.started),
     }
@@ -49,6 +50,12 @@ export function clearGame(): void {
 function migrateEntry(entry: ScoreEntry): ScoreEntry {
   if (entry.desc) return entry
   return { ...entry, desc: { kind: 'manual', amount: entry.amount } }
+}
+
+/** Ensure players from older saves have a trade-goods tally. */
+function migratePlayer(player: Player): Player {
+  if (player.goods) return player
+  return { ...player, goods: emptyGoods() }
 }
 
 /** Small, dependency-free unique id generator. */

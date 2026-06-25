@@ -72,6 +72,13 @@ export default function App() {
                         }}
                       />
                       <MenuItem
+                        label={`${t.scoreTradeGoods} 🍷`}
+                        onClick={() => {
+                          game.scoreTradeGoods()
+                          setMenuOpen(false)
+                        }}
+                      />
+                      <MenuItem
                         label={t.resetScores}
                         onClick={() => {
                           if (confirm(t.confirmReset)) game.resetScores()
@@ -100,6 +107,7 @@ export default function App() {
           <Scoreboard
             state={state}
             onScore={game.addScore}
+            onAddGoods={game.addGoods}
             onUndo={game.undoEntry}
           />
         ) : (

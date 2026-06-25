@@ -25,6 +25,15 @@ you play — with quick-add helpers that do the Carcassonne math for you.
     - **City** — 2 per tile + 2 per pennant when completed; 1 each at game end
     - **Cloister** — 1 + 1 per surrounding tile (9 when complete)
     - **Field** — 3 per completed city it borders (game end)
+- **Expansion scoring**
+  - **Inns & Cathedrals** — 🍺 **Inn** on a road (completed = 2/tile, incomplete
+    = 0) and ✝️ **Cathedral** in a city (completed = 3/tile + 3/pennant,
+    incomplete = 0), as toggles on the road/city forms.
+  - **Traders & Builders** — 🍷🌽🧵 **trade goods** tracked per player (recorded
+    on the Goods tab); "Score trade goods" in the menu awards 10 points to each
+    majority at game end (ties shared). 🐷 **Pig** toggle on fields (4 per city).
+  - **Bridges, Castles & Bazaars** — 🏯 **Castle** feature that scores the value
+    of the completed feature that triggered it.
 - **Live scoreboard** — players are ranked by score, with a 👑 on the leader.
 - **Score log** — every change is recorded with who/what/how many, and any
   entry can be **undone** (which corrects the score).

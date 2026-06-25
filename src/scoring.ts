@@ -1,10 +1,13 @@
+import type { GoodType } from './types'
+
 /**
- * Carcassonne scoring math (base game). These compute point values only;
- * human-readable labels are produced by the i18n layer from a ScoreDescriptor
- * so they can be localized.
+ * Carcassonne scoring math (base game + Inns & Cathedrals, Traders & Builders,
+ * and the Castle from Bridges, Castles & Bazaars). These compute point values
+ * only; human-readable labels are produced by the i18n layer from a
+ * ScoreDescriptor so they can be localized.
  */
 
-export type FeatureType = 'road' | 'city' | 'cloister' | 'field'
+export type FeatureType = 'road' | 'city' | 'cloister' | 'field' | 'castle'
 
 /** Emoji shown for each game feature (and for manual adjustments). */
 export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
@@ -12,27 +15,51 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
   city: '🏰',
   cloister: '⛪',
   field: '🌾',
+  castle: '🏯',
   manual: '✏️',
 }
 
-/** Road: 1 point per tile (scored the same whether complete or not). */
-export function scoreRoad(tiles: number): number {
-  return Math.max(0, Math.floor(tiles))
+/** Emoji for expansion modifiers. */
+export const INN_EMOJI = '🍺'
+export const CATHEDRAL_EMOJI = '✝️'
+export const PIG_EMOJI = '🐷'
+
+/** Trade-goods tokens (Traders & Builders). */
+export const GOODS_EMOJI: Record<GoodType, string> = {
+  wine: '🍷',
+  grain: '🌽',
+  cloth: '🧵',
+}
+
+/** Points awarded to each player holding the majority of a trade good. */
+export const GOODS_MAJORITY_BONUS = 10
+
+const clamp = (n: number) => Math.max(0, Math.floor(n))
+
+/**
+ * Road: 1 point per tile. With an inn (Inns & Cathedrals) a *completed* road
+ * is worth 2 per tile, but an incomplete one (game end) scores nothing.
+ */
+export function scoreRoad(tiles: number, completed: boolean, inn: boolean): number {
+  const t = clamp(tiles)
+  if (inn) return completed ? 2 * t : 0
+  return t
 }
 
 /**
- * City: when completed during play, 2 points per tile + 2 per pennant.
- * Incomplete cities scored at game end are worth 1 per tile + 1 per pennant.
+ * City: completed = 2 per tile + 2 per pennant; incomplete (game end) = 1 each.
+ * With a cathedral (Inns & Cathedrals) a *completed* city is worth 3 per tile
+ * and 3 per pennant, but an incomplete one scores nothing.
  */
 export function scoreCity(
   tiles: number,
   pennants: number,
   completed: boolean,
+  cathedral: boolean,
 ): number {
-  const t = Math.max(0, Math.floor(tiles))
-  const p = Math.max(0, Math.floor(pennants))
-  const per = completed ? 2 : 1
-  return per * t + per * p
+  const units = clamp(tiles) + clamp(pennants)
+  if (cathedral) return completed ? 3 * units : 0
+  return completed ? 2 * units : units
 }
 
 /**
@@ -41,11 +68,18 @@ export function scoreCity(
  */
 export function scoreCloister(surrounding: number, completed: boolean): number {
   if (completed) return 9
-  const s = Math.min(8, Math.max(0, Math.floor(surrounding)))
-  return 1 + s
+  return 1 + Math.min(8, clamp(surrounding))
 }
 
-/** Field (game end): 3 points for each completed city the field borders. */
-export function scoreField(cities: number): number {
-  return Math.max(0, Math.floor(cities)) * 3
+/**
+ * Field (game end): 3 points for each completed city the field borders, or 4
+ * if the player has a pig in that field (Traders & Builders).
+ */
+export function scoreField(cities: number, pig: boolean): number {
+  return clamp(cities) * (pig ? 4 : 3)
+}
+
+/** Castle (Bridges, Castles & Bazaars): scores the value of the feature that triggered it. */
+export function scoreCastle(value: number): number {
+  return clamp(value)
 }

@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { GameState, Player, ScoreDescriptor, ScoreEntry } from './types'
+import type {
+  GameState,
+  GoodType,
+  Player,
+  ScoreDescriptor,
+  ScoreEntry,
+  TradeGoods,
+} from './types'
+import { emptyGoods } from './types'
+import { GOODS_MAJORITY_BONUS } from './scoring'
 import { clearGame, emptyGame, loadGame, saveGame, uid } from './storage'
+
+const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
 
 /**
  * Central game state hook. Owns players + score log, persists to localStorage
@@ -25,7 +36,13 @@ export function useGame() {
       ...s,
       players: [
         ...s.players,
-        { id: uid(), name: name.trim() || `#${s.players.length + 1}`, color, score: 0 },
+        {
+          id: uid(),
+          name: name.trim() || `#${s.players.length + 1}`,
+          color,
+          score: 0,
+          goods: emptyGoods(),
+        },
       ],
     }))
   }, [])
@@ -93,11 +110,70 @@ export function useGame() {
     })
   }, [])
 
-  /** Reset scores to zero but keep the same players. */
+  /** Add to a player's collected trade goods (Traders & Builders). */
+  const addGoods = useCallback((playerId: string, delta: Partial<TradeGoods>) => {
+    setState((s) => ({
+      ...s,
+      players: s.players.map((p) =>
+        p.id === playerId
+          ? {
+              ...p,
+              goods: {
+                wine: p.goods.wine + (delta.wine ?? 0),
+                grain: p.goods.grain + (delta.grain ?? 0),
+                cloth: p.goods.cloth + (delta.cloth ?? 0),
+              },
+            }
+          : p,
+      ),
+    }))
+  }, [])
+
+  /**
+   * Score trade-goods majorities (game end): each player holding the most of a
+   * good earns a bonus; ties share it. Goods are then cleared.
+   */
+  const scoreTradeGoods = useCallback(() => {
+    setState((s) => {
+      const bonus: Record<string, number> = {}
+      const entries: ScoreEntry[] = []
+      let awarded = false
+
+      for (const good of GOOD_TYPES) {
+        const max = s.players.reduce((m, p) => Math.max(m, p.goods[good]), 0)
+        if (max <= 0) continue
+        for (const p of s.players) {
+          if (p.goods[good] !== max) continue
+          awarded = true
+          bonus[p.id] = (bonus[p.id] ?? 0) + GOODS_MAJORITY_BONUS
+          entries.push({
+            id: uid(),
+            playerId: p.id,
+            amount: GOODS_MAJORITY_BONUS,
+            desc: { kind: 'goodsBonus', good },
+            timestamp: Date.now(),
+          })
+        }
+      }
+
+      if (!awarded) return s
+      return {
+        ...s,
+        players: s.players.map((p) => ({
+          ...p,
+          score: p.score + (bonus[p.id] ?? 0),
+          goods: emptyGoods(),
+        })),
+        log: [...entries, ...s.log],
+      }
+    })
+  }, [])
+
+  /** Reset scores (and trade goods) to zero but keep the same players. */
   const resetScores = useCallback(() => {
     setState((s) => ({
       ...s,
-      players: s.players.map((p) => ({ ...p, score: 0 })),
+      players: s.players.map((p) => ({ ...p, score: 0, goods: emptyGoods() })),
       log: [],
     }))
   }, [])
@@ -116,6 +192,8 @@ export function useGame() {
     startGame,
     editPlayers,
     addScore,
+    addGoods,
+    scoreTradeGoods,
     undoEntry,
     resetScores,
     newGame,
