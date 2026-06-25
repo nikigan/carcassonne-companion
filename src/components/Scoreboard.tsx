@@ -1,14 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { GameState, Player, ScoreDescriptor, TradeGoods } from '../types'
+import type {
+  GameState,
+  Player,
+  ScoreDescriptor,
+  TokenDelta,
+  TradeGoods,
+} from '../types'
 import { contrastText } from '../colors'
 import { formatDescriptor, useI18n } from '../i18n'
-import { GOODS_EMOJI } from '../scoring'
+import { FEATURE_EMOJI, GOODS_EMOJI } from '../scoring'
 import { ScoreModal } from './ScoreModal'
 
 interface Props {
   state: GameState
   onScore: (playerId: string, amount: number, desc: ScoreDescriptor) => void
-  onAddGoods: (playerId: string, delta: Partial<TradeGoods>) => void
+  onRecordTokens: (playerId: string, delta: TokenDelta) => void
   onUndo: (entryId: string) => void
 }
 
@@ -24,7 +30,7 @@ function sortedIds(players: Player[]): string[] {
 }
 
 /** The in-game view: ranked player cards + quick actions + score log. */
-export function Scoreboard({ state, onScore, onAddGoods, onUndo }: Props) {
+export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
   const { t, lang } = useI18n()
   const [activeId, setActiveId] = useState<string | null>(null)
   const active = state.players.find((p) => p.id === activeId) ?? null
@@ -125,7 +131,7 @@ export function Scoreboard({ state, onScore, onAddGoods, onUndo }: Props) {
                 <div className="text-3xl font-black tabular-nums leading-tight">
                   {p.score}
                 </div>
-                <GoodsRow goods={p.goods} />
+                <GoodsRow goods={p.goods} gold={p.gold} />
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -203,27 +209,37 @@ export function Scoreboard({ state, onScore, onAddGoods, onUndo }: Props) {
           player={active}
           onClose={() => setActiveId(null)}
           onScore={(amount, desc) => onScore(active.id, amount, desc)}
-          onAddGoods={(delta) => onAddGoods(active.id, delta)}
+          onRecordTokens={(delta) => onRecordTokens(active.id, delta)}
         />
       )}
     </div>
   )
 }
 
-/** Compact trade-goods tally shown under a player's score (hidden when empty). */
-function GoodsRow({ goods }: { goods: TradeGoods }) {
-  if (goods.wine + goods.grain + goods.cloth === 0) return null
+/** Compact token tally (trade goods + gold) shown under a player's score. */
+function GoodsRow({ goods, gold }: { goods: TradeGoods; gold: number }) {
+  const hasGoods = goods.wine + goods.grain + goods.cloth > 0
+  if (!hasGoods && gold === 0) return null
   return (
-    <div className="mt-0.5 flex gap-2 text-xs text-white/50">
-      <span>
-        {GOODS_EMOJI.wine} {goods.wine}
-      </span>
-      <span>
-        {GOODS_EMOJI.grain} {goods.grain}
-      </span>
-      <span>
-        {GOODS_EMOJI.cloth} {goods.cloth}
-      </span>
+    <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-white/50">
+      {hasGoods && (
+        <>
+          <span>
+            {GOODS_EMOJI.wine} {goods.wine}
+          </span>
+          <span>
+            {GOODS_EMOJI.grain} {goods.grain}
+          </span>
+          <span>
+            {GOODS_EMOJI.cloth} {goods.cloth}
+          </span>
+        </>
+      )}
+      {gold > 0 && (
+        <span>
+          {FEATURE_EMOJI.gold} {gold}
+        </span>
+      )}
     </div>
   )
 }

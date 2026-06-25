@@ -104,6 +104,7 @@ export interface Strings {
   recordGoods: string
   goodsTabHint: string
   scoreTradeGoods: string
+  scoreGold: string
   goodsMajority: (good: string) => string
   goodsLabel: string
 
@@ -181,17 +182,19 @@ const en: Strings = {
   castleHint:
     'Scores the points of the completed feature that triggered the castle.',
   goldIngots: 'Gold ingots',
-  goldHint: 'Each gold ingot is worth 3 points (Gold Mines).',
+  goldHint:
+    'Gold Mines: scored from the menu at game end (1–3 bars: 1 each, 4–6: 2, 7–9: 3, 10+: 4).',
   messageHint: 'Points received from a message tile (The Messages).',
   goodNames: {
     wine: 'Wine',
     grain: 'Grain',
     cloth: 'Cloth',
   },
-  recordGoods: 'Record goods',
+  recordGoods: 'Record',
   goodsTabHint:
-    'Trade goods collected when completing cities. Score majorities from the menu at game end.',
+    'Goods and gold collected during play. Score them from the menu at game end.',
   scoreTradeGoods: 'Score trade goods',
+  scoreGold: 'Score gold',
   goodsMajority: (good) => `${good} majority`,
   goodsLabel: 'Goods',
 
@@ -283,7 +286,8 @@ const ru: Strings = {
   castleValue: 'Очки объекта',
   castleHint: 'Начисляет очки завершённого объекта, который активировал замок.',
   goldIngots: 'Слитки золота',
-  goldHint: 'Каждый слиток золота — 3 очка (Золотые жилы).',
+  goldHint:
+    'Золотые жилы: подсчёт через меню в конце игры (1–3 слитка: по 1, 4–6: по 2, 7–9: по 3, 10+: по 4).',
   messageHint: 'Очки, полученные от послания (Послания).',
   goodNames: {
     wine: 'Вино',
@@ -292,8 +296,9 @@ const ru: Strings = {
   },
   recordGoods: 'Записать',
   goodsTabHint:
-    'Товары собираются при завершении городов. Подсчитайте большинство в конце игры через меню.',
+    'Товары и золото, собранные за игру. Подсчитайте их через меню в конце игры.',
   scoreTradeGoods: 'Подсчитать товары',
+  scoreGold: 'Подсчитать золото',
   goodsMajority: (good) => `Большинство: ${good}`,
   goodsLabel: 'Товары',
 

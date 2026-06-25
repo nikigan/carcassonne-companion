@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Player, ScoreDescriptor, TradeGoods } from '../types'
+import type { Player, ScoreDescriptor, TokenDelta } from '../types'
 import { contrastText } from '../colors'
 import { useI18n } from '../i18n'
 import {
@@ -12,7 +12,6 @@ import {
   scoreCity,
   scoreCloister,
   scoreField,
-  scoreGold,
   scoreMessage,
   scoreRoad,
   type FeatureType,
@@ -22,13 +21,13 @@ interface Props {
   player: Player
   onClose: () => void
   onScore: (amount: number, desc: ScoreDescriptor) => void
-  onAddGoods: (delta: Partial<TradeGoods>) => void
+  onRecordTokens: (delta: TokenDelta) => void
 }
 
 type Tab = 'preset' | 'goods' | 'manual'
 
 /** Modal for adding points to a player via Carcassonne presets or manual entry. */
-export function ScoreModal({ player, onClose, onScore, onAddGoods }: Props) {
+export function ScoreModal({ player, onClose, onScore, onRecordTokens }: Props) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('preset')
 
@@ -90,7 +89,7 @@ export function ScoreModal({ player, onClose, onScore, onAddGoods }: Props) {
         {tab === 'goods' && (
           <GoodsForm
             onRecord={(delta) => {
-              onAddGoods(delta)
+              onRecordTokens(delta)
               onClose()
             }}
           />
@@ -113,7 +112,6 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
     'cloister',
     'field',
     'castle',
-    'gold',
     'message',
   ]
 
@@ -141,7 +139,6 @@ function PresetForms({ onApply }: { onApply: ApplyFn }) {
       {feature === 'cloister' && <CloisterForm onApply={onApply} />}
       {feature === 'field' && <FieldForm onApply={onApply} />}
       {feature === 'castle' && <CastleForm onApply={onApply} />}
-      {feature === 'gold' && <GoldForm onApply={onApply} />}
       {feature === 'message' && <MessageForm onApply={onApply} />}
     </div>
   )
@@ -341,18 +338,6 @@ function CastleForm({ onApply }: { onApply: ApplyFn }) {
   )
 }
 
-function GoldForm({ onApply }: { onApply: ApplyFn }) {
-  const { t } = useI18n()
-  const [ingots, setIngots] = useState(1)
-  return (
-    <div>
-      <NumberField label={t.goldIngots} value={ingots} onChange={setIngots} min={0} />
-      <p className="mt-1 text-xs text-white/40">{t.goldHint}</p>
-      <ApplyBar amount={scoreGold(ingots)} desc={{ kind: 'gold', ingots }} onApply={onApply} />
-    </div>
-  )
-}
-
 function MessageForm({ onApply }: { onApply: ApplyFn }) {
   const { t } = useI18n()
   const [points, setPoints] = useState(2)
@@ -369,22 +354,25 @@ function MessageForm({ onApply }: { onApply: ApplyFn }) {
   )
 }
 
-function GoodsForm({ onRecord }: { onRecord: (delta: Partial<TradeGoods>) => void }) {
+function GoodsForm({ onRecord }: { onRecord: (delta: TokenDelta) => void }) {
   const { t } = useI18n()
   const [wine, setWine] = useState(0)
   const [grain, setGrain] = useState(0)
   const [cloth, setCloth] = useState(0)
-  const total = wine + grain + cloth
+  const [gold, setGold] = useState(0)
+  const total = wine + grain + cloth + gold
 
   return (
     <div>
       <NumberField label={`${GOODS_EMOJI.wine} ${t.goodNames.wine}`} value={wine} onChange={setWine} />
       <NumberField label={`${GOODS_EMOJI.grain} ${t.goodNames.grain}`} value={grain} onChange={setGrain} />
       <NumberField label={`${GOODS_EMOJI.cloth} ${t.goodNames.cloth}`} value={cloth} onChange={setCloth} />
+      <div className="my-2 border-t border-white/10" />
+      <NumberField label={`${FEATURE_EMOJI.gold} ${t.goldIngots}`} value={gold} onChange={setGold} />
       <p className="mt-1 text-xs text-white/40">{t.goodsTabHint}</p>
       <button
         disabled={total === 0}
-        onClick={() => onRecord({ wine, grain, cloth })}
+        onClick={() => onRecord({ wine, grain, cloth, gold })}
         className="mt-4 w-full rounded-xl bg-emerald-500 py-3 text-lg font-bold text-white transition enabled:hover:bg-emerald-400 enabled:active:scale-[0.98] disabled:opacity-40"
       >
         {t.recordGoods}

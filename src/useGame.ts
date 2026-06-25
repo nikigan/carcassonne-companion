@@ -5,10 +5,10 @@ import type {
   Player,
   ScoreDescriptor,
   ScoreEntry,
-  TradeGoods,
+  TokenDelta,
 } from './types'
 import { emptyGoods } from './types'
-import { GOODS_MAJORITY_BONUS } from './scoring'
+import { GOODS_MAJORITY_BONUS, scoreGold } from './scoring'
 import { clearGame, emptyGame, loadGame, saveGame, uid } from './storage'
 
 const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
@@ -42,6 +42,7 @@ export function useGame() {
           color,
           score: 0,
           goods: emptyGoods(),
+          gold: 0,
         },
       ],
     }))
@@ -110,8 +111,8 @@ export function useGame() {
     })
   }, [])
 
-  /** Add to a player's collected trade goods (Traders & Builders). */
-  const addGoods = useCallback((playerId: string, delta: Partial<TradeGoods>) => {
+  /** Add to a player's collected tokens: trade goods and/or gold ingots. */
+  const recordTokens = useCallback((playerId: string, delta: TokenDelta) => {
     setState((s) => ({
       ...s,
       players: s.players.map((p) =>
@@ -123,10 +124,42 @@ export function useGame() {
                 grain: p.goods.grain + (delta.grain ?? 0),
                 cloth: p.goods.cloth + (delta.cloth ?? 0),
               },
+              gold: p.gold + (delta.gold ?? 0),
             }
           : p,
       ),
     }))
+  }, [])
+
+  /**
+   * Score gold ingots (game end): each player's gold is worth a progressive
+   * per-ingot rate based on how much they hold. Gold is then cleared.
+   */
+  const scoreGoldIngots = useCallback(() => {
+    setState((s) => {
+      const entries: ScoreEntry[] = []
+      for (const p of s.players) {
+        if (p.gold <= 0) continue
+        entries.push({
+          id: uid(),
+          playerId: p.id,
+          amount: scoreGold(p.gold),
+          desc: { kind: 'gold', ingots: p.gold },
+          timestamp: Date.now(),
+        })
+      }
+      if (entries.length === 0) return s
+      const byPlayer = new Map(entries.map((e) => [e.playerId, e.amount]))
+      return {
+        ...s,
+        players: s.players.map((p) => ({
+          ...p,
+          score: p.score + (byPlayer.get(p.id) ?? 0),
+          gold: 0,
+        })),
+        log: [...entries, ...s.log],
+      }
+    })
   }, [])
 
   /**
@@ -169,11 +202,16 @@ export function useGame() {
     })
   }, [])
 
-  /** Reset scores (and trade goods) to zero but keep the same players. */
+  /** Reset scores (and collected tokens) to zero but keep the same players. */
   const resetScores = useCallback(() => {
     setState((s) => ({
       ...s,
-      players: s.players.map((p) => ({ ...p, score: 0, goods: emptyGoods() })),
+      players: s.players.map((p) => ({
+        ...p,
+        score: 0,
+        goods: emptyGoods(),
+        gold: 0,
+      })),
       log: [],
     }))
   }, [])
@@ -192,8 +230,9 @@ export function useGame() {
     startGame,
     editPlayers,
     addScore,
-    addGoods,
+    recordTokens,
     scoreTradeGoods,
+    scoreGoldIngots,
     undoEntry,
     resetScores,
     newGame,

@@ -52,10 +52,13 @@ function migrateEntry(entry: ScoreEntry): ScoreEntry {
   return { ...entry, desc: { kind: 'manual', amount: entry.amount } }
 }
 
-/** Ensure players from older saves have a trade-goods tally. */
+/** Ensure players from older saves have trade-goods and gold tallies. */
 function migratePlayer(player: Player): Player {
-  if (player.goods) return player
-  return { ...player, goods: emptyGoods() }
+  return {
+    ...player,
+    goods: player.goods ?? emptyGoods(),
+    gold: player.gold ?? 0,
+  }
 }
 
 /** Small, dependency-free unique id generator. */

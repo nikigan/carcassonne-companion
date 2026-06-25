@@ -34,8 +34,9 @@ you play — with quick-add helpers that do the Carcassonne math for you.
     majority at game end (ties shared). 🐷 **Pig** toggle on fields (4 per city).
   - **Bridges, Castles & Bazaars** — 🏯 **Castle** feature that scores the value
     of the completed feature that triggered it.
-  - **Gold Mines** — 🪙 **Gold** feature: enter ingots collected, scored at
-    3 points each.
+  - **Gold Mines** — 🪙 **Gold** ingots tracked per player (recorded on the
+    Goods tab); "Score gold" in the menu applies the progressive table at game
+    end (1–3 bars: 1 each, 4–6: 2, 7–9: 3, 10+: 4).
   - **The Messages** — 📜 **Message** feature: record the points received from
     a message tile.
 - **Live scoreboard** — players are ranked by score, with a 👑 on the leader.

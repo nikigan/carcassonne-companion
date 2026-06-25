@@ -72,9 +72,16 @@ export default function App() {
                         }}
                       />
                       <MenuItem
-                        label={`${t.scoreTradeGoods} 🍷`}
+                        label={`${t.scoreTradeGoods} 🛢️`}
                         onClick={() => {
                           game.scoreTradeGoods()
+                          setMenuOpen(false)
+                        }}
+                      />
+                      <MenuItem
+                        label={`${t.scoreGold} 🪙`}
+                        onClick={() => {
+                          game.scoreGoldIngots()
                           setMenuOpen(false)
                         }}
                       />
@@ -107,7 +114,7 @@ export default function App() {
           <Scoreboard
             state={state}
             onScore={game.addScore}
-            onAddGoods={game.addGoods}
+            onRecordTokens={game.recordTokens}
             onUndo={game.undoEntry}
           />
         ) : (

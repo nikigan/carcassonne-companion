@@ -43,9 +43,6 @@ export const GOODS_EMOJI: Record<GoodType, string> = {
 /** Points awarded to each player holding the majority of a trade good. */
 export const GOODS_MAJORITY_BONUS = 10
 
-/** Points per gold ingot at game end (Gold Mines). */
-export const GOLD_PER_INGOT = 3
-
 const clamp = (n: number) => Math.max(0, Math.floor(n))
 
 /**
@@ -96,9 +93,20 @@ export function scoreCastle(value: number): number {
   return clamp(value)
 }
 
-/** Gold Mines: each collected gold ingot is worth 3 points. */
+/**
+ * Gold Mines: gold scores progressively — the more ingots a player has, the
+ * more each one is worth (1–3 bars: 1 each, 4–6: 2, 7–9: 3, 10+: 4).
+ */
+export function goldRate(ingots: number): number {
+  const n = clamp(ingots)
+  if (n >= 10) return 4
+  if (n >= 7) return 3
+  if (n >= 4) return 2
+  return 1
+}
+
 export function scoreGold(ingots: number): number {
-  return clamp(ingots) * GOLD_PER_INGOT
+  return clamp(ingots) * goldRate(ingots)
 }
 
 /** The Messages: points received from a message tile (entered directly). */

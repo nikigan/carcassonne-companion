@@ -9,6 +9,14 @@ export interface TradeGoods {
 
 export const emptyGoods = (): TradeGoods => ({ wine: 0, grain: 0, cloth: 0 })
 
+/** Collected tokens to add to a player: trade goods and/or gold ingots. */
+export interface TokenDelta {
+  wine?: number
+  grain?: number
+  cloth?: number
+  gold?: number
+}
+
 export interface Player {
   id: string
   name: string
@@ -17,6 +25,8 @@ export interface Player {
   score: number
   /** Trade goods collected (Traders & Builders). */
   goods: TradeGoods
+  /** Gold ingots collected (Gold Mines). */
+  gold: number
 }
 
 /**
