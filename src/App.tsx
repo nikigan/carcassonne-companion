@@ -79,7 +79,7 @@ export default function App() {
                         }}
                       />
                       <MenuItem
-                        label={`${t.scoreGold} 🪙`}
+                        label={`${t.scoreGold} 🟨`}
                         onClick={() => {
                           game.scoreGoldIngots()
                           setMenuOpen(false)

@@ -23,7 +23,7 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
   cloister: '⛪',
   field: '🌾',
   castle: '🏯',
-  gold: '🪙',
+  gold: '🟨',
   message: '📜',
   manual: '✏️',
 }
