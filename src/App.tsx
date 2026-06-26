@@ -172,6 +172,7 @@ export default function App() {
             onStart={game.startGame}
             onCreateRoom={async () => { await game.createRoom(); setRoomPanelOpen(true) }}
             onJoinRoom={game.joinRoom}
+            inRoom={room !== null}
           />
         )}
       </main>

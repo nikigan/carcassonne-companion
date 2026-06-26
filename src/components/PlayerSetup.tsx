@@ -16,6 +16,8 @@ interface Props {
   onStart: () => void
   onCreateRoom: () => void
   onJoinRoom: (code: string) => void
+  /** Hide the create/join controls when this device is already in a room. */
+  inRoom: boolean
 }
 
 /** Pre-game screen: add/edit/remove players and their colors, then start. */
@@ -29,6 +31,7 @@ export function PlayerSetup({
   onStart,
   onCreateRoom,
   onJoinRoom,
+  inRoom,
 }: Props) {
   const { t } = useI18n()
   const usedHexes = players.map((p) => p.color)
@@ -133,31 +136,35 @@ export function PlayerSetup({
           >
             {t.startGame}
           </button>
-          <button
-            type="button"
-            onClick={onCreateRoom}
-            className="block w-full rounded-xl bg-white/5 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10"
-          >
-            {t.playOnMultipleDevices}
-          </button>
-          <div className="pt-0.5 text-xs font-medium text-white/40">{t.joinByCode}</div>
-          <div className="flex gap-2">
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => { if (e.key === 'Enter' && joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
-              placeholder={t.enterCode}
-              maxLength={6}
-              className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-sm font-mono tracking-widest outline-none ring-1 ring-white/10 focus:ring-white/30 uppercase"
-            />
-            <button
-              type="button"
-              onClick={() => { if (joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
-              className="shrink-0 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
-            >
-              {t.join}
-            </button>
-          </div>
+          {!inRoom && (
+            <>
+              <button
+                type="button"
+                onClick={onCreateRoom}
+                className="block w-full rounded-xl bg-white/5 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10"
+              >
+                {t.playOnMultipleDevices}
+              </button>
+              <div className="pt-0.5 text-xs font-medium text-white/40">{t.joinByCode}</div>
+              <div className="flex gap-2">
+                <input
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
+                  placeholder={t.enterCode}
+                  maxLength={6}
+                  className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-sm font-mono tracking-widest outline-none ring-1 ring-white/10 focus:ring-white/30 uppercase"
+                />
+                <button
+                  type="button"
+                  onClick={() => { if (joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
+                  className="shrink-0 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                >
+                  {t.join}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
