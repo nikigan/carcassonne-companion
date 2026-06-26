@@ -171,6 +171,13 @@ export interface Strings {
   statusConnecting: string
   statusConnected: string
   statusReconnecting: string
+
+  // Message alerts (The Messengers)
+  messageAvailable: string
+  messageBadgeAria: (name: string) => string
+  messageDismissAria: (name: string) => string
+  soundLabel: string
+
   // PWA update prompt
   updateAvailable: string
   refresh: string
@@ -240,7 +247,7 @@ const en: Strings = {
   goldIngots: 'Gold ingots',
   goldHint:
     'Gold Mines: scored from the menu at game end (1–3 bars: 1 each, 4–6: 2, 7–9: 3, 10+: 4).',
-  messageHint: 'Points received from a message tile (The Messages).',
+  messageHint: 'Points received from a message tile (The Messengers).',
   goodNames: {
     wine: 'Wine',
     grain: 'Grain',
@@ -283,7 +290,7 @@ const en: Strings = {
     tradersBuilders: 'Traders & Builders',
     bridgesCastlesBazaars: 'Bridges, Castles & Bazaars',
     goldMines: 'Gold Mines',
-    messages: 'The Messages',
+    messages: 'The Messengers',
     mageWitch: 'The Mage & Witch',
     circus: 'Circus & Artists',
   },
@@ -292,7 +299,7 @@ const en: Strings = {
     tradersBuilders: 'Trade goods majorities and the pig.',
     bridgesCastlesBazaars: 'Castles.',
     goldMines: 'Gold ingots, scored at game end.',
-    messages: 'Message tiles (manual points).',
+    messages: 'Auto-alerts message tiles (manual points).',
     mageWitch: 'Mage boosts and witch halves a road or city.',
     circus: 'Big Top animals, acrobats and the ringmaster.',
   },
@@ -336,6 +343,11 @@ const en: Strings = {
   statusConnecting: 'Connecting…',
   statusConnected: 'Live',
   statusReconnecting: 'Reconnecting…',
+
+  messageAvailable: '📜 A message is available!',
+  messageBadgeAria: (name) => `${name} — open message`,
+  messageDismissAria: (name) => `${name} — dismiss message`,
+  soundLabel: 'Sound',
 
   updateAvailable: 'A new version is available.',
   refresh: 'Refresh',
@@ -410,7 +422,7 @@ const ru: Strings = {
   goldIngots: 'Слитки золота',
   goldHint:
     'Золотые жилы: подсчёт через меню в конце игры (1–3 слитка: по 1, 4–6: по 2, 7–9: по 3, 10+: по 4).',
-  messageHint: 'Очки, полученные от послания (Послания).',
+  messageHint: 'Очки, полученные от послания (Гонцы).',
   goodNames: {
     wine: 'Вино',
     grain: 'Зерно',
@@ -453,7 +465,7 @@ const ru: Strings = {
     tradersBuilders: 'Купцы и строители',
     bridgesCastlesBazaars: 'Мосты, замки и базары',
     goldMines: 'Золотые жилы',
-    messages: 'Послания',
+    messages: 'Гонцы',
     mageWitch: 'Маг и ведьма',
     circus: 'Цирк',
   },
@@ -462,7 +474,7 @@ const ru: Strings = {
     tradersBuilders: 'Большинство товаров и свинья.',
     bridgesCastlesBazaars: 'Замки.',
     goldMines: 'Слитки золота, подсчёт в конце игры.',
-    messages: 'Тайлы посланий (очки вручную).',
+    messages: 'Оповещает о тайлах посланий (очки вручную).',
     mageWitch: 'Маг усиливает, ведьма уменьшает дорогу или город.',
     circus: 'Животные шатра, акробаты и директор цирка.',
   },
@@ -506,6 +518,11 @@ const ru: Strings = {
   statusConnecting: 'Подключение…',
   statusConnected: 'В сети',
   statusReconnecting: 'Переподключение…',
+
+  messageAvailable: '📜 Появилось послание!',
+  messageBadgeAria: (name) => `${name} — открыть послание`,
+  messageDismissAria: (name) => `${name} — убрать послание`,
+  soundLabel: 'Звук',
 
   updateAvailable: 'Доступно обновление.',
   refresh: 'Обновить',
