@@ -9,6 +9,7 @@
 export type ExpansionId =
   | 'innsCathedrals'
   | 'tradersBuilders'
+  | 'princessDragon'
   | 'bridgesCastlesBazaars'
   | 'goldMines'
   | 'messages'
@@ -25,6 +26,7 @@ export interface ExpansionMeta {
 export const EXPANSIONS: ExpansionMeta[] = [
   { id: 'innsCathedrals', emoji: '🍺' },
   { id: 'tradersBuilders', emoji: '🐷' },
+  { id: 'princessDragon', emoji: '🐉' },
   { id: 'bridgesCastlesBazaars', emoji: '🏯' },
   { id: 'goldMines', emoji: '🟨' },
   { id: 'messages', emoji: '📜' },

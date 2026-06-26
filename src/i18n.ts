@@ -286,6 +286,7 @@ const en: Strings = {
   expansionNames: {
     innsCathedrals: 'Inns & Cathedrals',
     tradersBuilders: 'Traders & Builders',
+    princessDragon: 'The Princess & the Dragon',
     bridgesCastlesBazaars: 'Bridges, Castles & Bazaars',
     goldMines: 'Gold Mines',
     messages: 'The Messages',
@@ -295,6 +296,7 @@ const en: Strings = {
   expansionDescriptions: {
     innsCathedrals: 'Inns on roads, cathedrals in cities.',
     tradersBuilders: 'Trade goods majorities and the pig.',
+    princessDragon: 'The fairy: +1 each turn, +3 when a feature scores.',
     bridgesCastlesBazaars: 'Castles.',
     goldMines: 'Gold ingots, scored at game end.',
     messages: 'Message tiles (manual points).',
@@ -461,6 +463,7 @@ const ru: Strings = {
   expansionNames: {
     innsCathedrals: 'Трактиры и соборы',
     tradersBuilders: 'Купцы и строители',
+    princessDragon: 'Принцесса и дракон',
     bridgesCastlesBazaars: 'Мосты, замки и базары',
     goldMines: 'Золотые жилы',
     messages: 'Послания',
@@ -470,6 +473,7 @@ const ru: Strings = {
   expansionDescriptions: {
     innsCathedrals: 'Трактиры на дорогах, соборы в городах.',
     tradersBuilders: 'Большинство товаров и свинья.',
+    princessDragon: 'Фея: +1 за ход, +3 при подсчёте объекта.',
     bridgesCastlesBazaars: 'Замки.',
     goldMines: 'Слитки золота, подсчёт в конце игры.',
     messages: 'Тайлы посланий (очки вручную).',
