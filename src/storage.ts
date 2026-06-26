@@ -34,6 +34,40 @@ export function saveGame(state: GameState): void {
   }
 }
 
+// --- Room mode storage -----------------------------------------------------
+// The code of the room we're currently in (so a reload rejoins it), plus a
+// per-room cache of the last displayed state for an instant paint on rejoin.
+// Solo play keeps using STORAGE_KEY above and never touches these.
+
+const ACTIVE_ROOM_KEY = 'carcassonne-companion:active-room'
+const roomKey = (code: string) => `carcassonne-companion:room:${code}`
+
+export function loadActiveRoom(): string | null {
+  try { return localStorage.getItem(ACTIVE_ROOM_KEY) } catch { return null }
+}
+
+export function saveActiveRoom(code: string | null): void {
+  try {
+    if (code) localStorage.setItem(ACTIVE_ROOM_KEY, code)
+    else localStorage.removeItem(ACTIVE_ROOM_KEY)
+  } catch { /* ignore */ }
+}
+
+export function loadRoomCache(code: string): GameState | null {
+  try {
+    const raw = localStorage.getItem(roomKey(code))
+    return raw ? (JSON.parse(raw) as GameState) : null
+  } catch { return null }
+}
+
+export function saveRoomCache(code: string, state: GameState): void {
+  try { localStorage.setItem(roomKey(code), JSON.stringify(state)) } catch { /* ignore */ }
+}
+
+export function clearRoomCache(code: string): void {
+  try { localStorage.removeItem(roomKey(code)) } catch { /* ignore */ }
+}
+
 /**
  * Bring a stored log entry up to the current shape. Earlier versions stored a
  * pre-rendered `label` string instead of a structured `desc`; fall back to a
