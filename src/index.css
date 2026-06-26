@@ -1,7 +1,41 @@
 @import 'tailwindcss';
 
+/* Class-based dark variant: theme is driven by a class on <html>, not the OS
+   media query (the inline script in index.html + ThemeProvider set it). `dark:`
+   is reserved for the few accent-on-tint spots that need a light override;
+   structural neutrals use the semantic tokens below. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic neutral palette. Defaults ARE the dark theme (current look is
+   unchanged); the `.light` block overrides them. Utilities reference these
+   variables at use-site, so flipping the class reskins the whole app. */
+@theme {
+  --color-canvas: #111827;            /* page background (was gray-900) */
+  --color-surface: #1f2937;           /* cards, modals, menus (was gray-800) */
+  --color-fg: #ffffff;                /* primary text + /N emphasis (was white) */
+  --color-overlay: #ffffff;           /* raised surfaces / hover via /N (was white/N) */
+  --color-line: #ffffff;              /* borders + rings via /N (was white/N) */
+  --color-scrim: #000000;             /* modal backdrops via /N (was black/N) */
+  --color-field: rgb(0 0 0 / 0.3);    /* recessed inputs / segment tracks (was black/30) */
+}
+
+.light {
+  --color-canvas: #f9fafb;            /* gray-50 */
+  --color-surface: #ffffff;
+  --color-fg: #111827;                /* gray-900 */
+  --color-overlay: #000000;
+  --color-line: #000000;
+  --color-scrim: #000000;             /* scrims stay dark over content */
+  --color-field: rgb(0 0 0 / 0.06);   /* faint inset on white */
+}
+
+/* color-scheme drives UA form controls, scrollbars, and the default canvas
+   color. :root default is dark; .light flips it. */
 :root {
   color-scheme: dark;
+}
+.light {
+  color-scheme: light;
 }
 
 html,
@@ -11,9 +45,9 @@ body,
 }
 
 /* Paint the page canvas to match the app so the bottom safe-area strip and any
-   overscroll show the app's dark surface instead of a black band (iOS PWA). */
+   overscroll show the app surface instead of a contrasting band (iOS PWA). */
 html {
-  @apply bg-gray-900;
+  @apply bg-canvas;
 }
 
 body {
