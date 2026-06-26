@@ -78,6 +78,24 @@ match the Hobby World 2019 "Новое издание" rulebook (поле, щи�
 **except** "тайл" is kept as the familiar community term for the rulebook's
 "квадрат". English matches the Z-Man new edition (Monastery, coat of arms).
 
+### Theming (dark / light / system)
+Appearance is driven by a `.dark`/`.light` class on `<html>`. Structural neutral
+colors use **semantic tokens** defined in `src/index.css` (`bg-canvas`,
+`bg-surface`, `text-fg`, `bg-overlay/N`, `border-line/N`, `ring-line/N`,
+`bg-scrim/N`, `bg-field`) — the dark values are the defaults and the `.light`
+block overrides them, so the same utility reskins both themes. **Don't add raw
+`bg-gray-*` / `text-white` / `white|black/N` for neutrals** — use a token so both
+themes work. Saturated-accent buttons keep literal `text-white`; the camera
+(`QrScanModal`), the QR container, and toggle-switch knobs stay literal
+`bg-white`/`bg-black`. Accent-on-tint text (e.g. the amber message toast/badge)
+uses a `dark:` override for light-mode contrast. Theme state lives in
+`src/theme.ts` (`ThemeProvider`/`useTheme` + pure `resolveTheme`/`nextTheme`,
+mirrors `LanguageProvider`); default is **system**, choice persists at
+`carcassonne-companion:theme`, and the header's cycling icon button (☀️→🌙→🖥️)
+switches it. An inline script in `index.html` paints the resolved canvas before
+first paint (fixes the refresh flash) — **keep its hexes in sync** with
+`--color-canvas` / `CANVAS_COLOR` in `src/theme.ts`.
+
 ### Adding a feature / expansion scoring
 1. `scoring.ts`: add a pure `scoreX(...)` returning points (+ any emoji).
 2. `types.ts`: add a `ScoreDescriptor` variant `{ kind: 'x'; … }`.

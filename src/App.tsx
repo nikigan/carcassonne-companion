@@ -283,7 +283,7 @@ function MessageToast({ show, text }: { show: boolean; text: string }) {
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(5rem,calc(env(safe-area-inset-bottom)+5rem))]"
     >
       {show && (
-        <div className="pointer-events-auto rounded-xl border border-amber-400/30 bg-amber-500/20 px-4 py-3 text-sm font-semibold text-amber-50 shadow-2xl backdrop-blur">
+        <div className="pointer-events-auto rounded-xl border border-amber-400/30 bg-amber-500/20 px-4 py-3 text-sm font-semibold text-amber-900 shadow-2xl backdrop-blur dark:text-amber-50">
           {text}
         </div>
       )}

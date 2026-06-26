@@ -180,7 +180,7 @@ export function Scoreboard({
                 </div>
                 <GoodsRow goods={p.goods} gold={p.gold} />
                 {messagePending?.has(p.id) && (
-                  <div className="mt-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 py-0.5 pl-2 pr-0.5 text-amber-200 motion-safe:animate-pulse">
+                  <div className="mt-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 py-0.5 pl-2 pr-0.5 text-amber-900 motion-safe:animate-pulse dark:text-amber-200">
                     <button
                       type="button"
                       onClick={() => openMessage(p.id)}
@@ -194,7 +194,7 @@ export function Scoreboard({
                       type="button"
                       onClick={() => onDismissMessage?.(p.id)}
                       aria-label={t.messageDismissAria(p.name)}
-                      className="ml-0.5 rounded-full px-1 text-xs text-amber-200/70 hover:bg-overlay/10 hover:text-fg"
+                      className="ml-0.5 rounded-full px-1 text-xs text-amber-900/70 hover:bg-overlay/10 hover:text-fg dark:text-amber-200/70"
                     >
                       ✕
                     </button>
