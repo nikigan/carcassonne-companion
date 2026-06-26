@@ -14,6 +14,8 @@ interface Props {
   onRemove: (id: string) => void
   onToggleExpansion: (id: ExpansionId, on: boolean) => void
   onStart: () => void
+  onCreateRoom: () => void
+  onJoinRoom: (code: string) => void
 }
 
 /** Pre-game screen: add/edit/remove players and their colors, then start. */
@@ -25,11 +27,14 @@ export function PlayerSetup({
   onRemove,
   onToggleExpansion,
   onStart,
+  onCreateRoom,
+  onJoinRoom,
 }: Props) {
   const { t } = useI18n()
   const usedHexes = players.map((p) => p.color)
   const [name, setName] = useState('')
   const [color, setColor] = useState(() => nextAvailableColor(usedHexes))
+  const [joinCode, setJoinCode] = useState('')
 
   const submit = () => {
     onAdd(name.trim() || t.defaultPlayerName(players.length + 1), color)
@@ -119,14 +124,40 @@ export function PlayerSetup({
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-white/10 bg-gray-900/90 p-4 backdrop-blur">
-        <button
-          type="button"
-          onClick={onStart}
-          disabled={players.length === 0}
-          className="mx-auto block w-full max-w-md rounded-xl bg-amber-500 py-3 text-lg font-bold text-gray-900 transition enabled:hover:bg-amber-400 enabled:active:scale-[0.98] disabled:opacity-40"
-        >
-          {t.startGame}
-        </button>
+        <div className="mx-auto w-full max-w-md space-y-2">
+          <button
+            type="button"
+            onClick={onStart}
+            disabled={players.length === 0}
+            className="block w-full rounded-xl bg-amber-500 py-3 text-lg font-bold text-gray-900 transition enabled:hover:bg-amber-400 enabled:active:scale-[0.98] disabled:opacity-40"
+          >
+            {t.startGame}
+          </button>
+          <button
+            type="button"
+            onClick={onCreateRoom}
+            className="block w-full rounded-xl bg-white/5 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10"
+          >
+            {t.playOnMultipleDevices}
+          </button>
+          <div className="flex gap-2">
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => { if (e.key === 'Enter' && joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
+              placeholder={t.enterCode}
+              maxLength={6}
+              className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-sm font-mono tracking-widest outline-none ring-1 ring-white/10 focus:ring-white/30 uppercase"
+            />
+            <button
+              type="button"
+              onClick={() => { if (joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
+              className="shrink-0 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+            >
+              {t.join}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

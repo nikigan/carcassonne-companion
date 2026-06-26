@@ -1,0 +1,39 @@
+import { useState } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
+import { useI18n } from '../i18n'
+import { roomPath } from '../game/protocol'
+
+export function RoomPanel({ code, onClose, onLeave }: { code: string; onClose: () => void; onLeave: () => void }) {
+  const { t } = useI18n()
+  const [copied, setCopied] = useState(false)
+  const url = `${location.origin}${roomPath(code)}`
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* ignore */ }
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
+      <div className="w-full max-w-md rounded-t-3xl bg-gray-800 p-5 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold">{t.roomTitle}</h2>
+          <button onClick={onClose} className="rounded-lg px-2 py-1 text-white/50 hover:bg-white/10" aria-label={t.close}>✕</button>
+        </div>
+
+        <div className="flex flex-col items-center gap-3">
+          <div className="rounded-xl bg-white p-3">
+            <QRCodeSVG value={url} size={180} level="M" marginSize={1} />
+          </div>
+          <p className="text-xs text-white/50">{t.scanToJoin}</p>
+          <div className="text-2xl font-mono font-bold tracking-widest">{code}</div>
+          <button onClick={copy} className="w-full rounded-xl bg-white/10 py-3 font-medium hover:bg-white/15">
+            {copied ? t.linkCopied : t.copyLink}
+          </button>
+          <button onClick={onLeave} className="w-full rounded-xl py-3 font-medium text-red-400 hover:bg-white/10">
+            {t.leaveRoom}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -4,13 +4,15 @@ import { LANGUAGES, useI18n } from './i18n'
 import { PlayerSetup } from './components/PlayerSetup'
 import { Scoreboard } from './components/Scoreboard'
 import { ExpansionPicker } from './components/ExpansionPicker'
+import { RoomPanel } from './components/RoomPanel'
 
 export default function App() {
   const { t, lang, setLang } = useI18n()
   const game = useGame()
-  const { state } = game
+  const { state, room } = game
   const [menuOpen, setMenuOpen] = useState(false)
   const [expansionsOpen, setExpansionsOpen] = useState(false)
+  const [roomPanelOpen, setRoomPanelOpen] = useState(false)
 
   const leader =
     state.started && state.players.length
@@ -51,6 +53,13 @@ export default function App() {
               ))}
             </div>
 
+            {room && (
+              <button onClick={() => setRoomPanelOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1 text-xs font-mono">
+                <span className={`h-2 w-2 rounded-full ${room.status === 'open' ? 'bg-green-400' : room.status === 'reconnecting' ? 'bg-amber-400' : 'bg-white/40'}`} />
+                {room.code}
+              </button>
+            )}
+
             {state.started && (
               <div className="relative">
                 <button
@@ -66,6 +75,24 @@ export default function App() {
                       onClick={() => setMenuOpen(false)}
                     />
                     <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-gray-800 shadow-xl">
+                      {!room ? (
+                        <MenuItem
+                          label={`${t.shareGame} 🔗`}
+                          onClick={async () => {
+                            await game.createRoom()
+                            setRoomPanelOpen(true)
+                            setMenuOpen(false)
+                          }}
+                        />
+                      ) : (
+                        <MenuItem
+                          label={`${t.roomTitle} 🔗`}
+                          onClick={() => {
+                            setRoomPanelOpen(true)
+                            setMenuOpen(false)
+                          }}
+                        />
+                      )}
                       <MenuItem
                         label={t.editPlayers}
                         onClick={() => {
@@ -139,6 +166,8 @@ export default function App() {
             onRemove={game.removePlayer}
             onToggleExpansion={game.setExpansion}
             onStart={game.startGame}
+            onCreateRoom={async () => { await game.createRoom(); setRoomPanelOpen(true) }}
+            onJoinRoom={game.joinRoom}
           />
         )}
       </main>
@@ -169,6 +198,14 @@ export default function App() {
             />
           </div>
         </div>
+      )}
+
+      {roomPanelOpen && room && (
+        <RoomPanel
+          code={room.code}
+          onClose={() => setRoomPanelOpen(false)}
+          onLeave={() => { game.leaveRoom(); setRoomPanelOpen(false) }}
+        />
       )}
 
       {state.started && leader && state.log.length > 0 && (

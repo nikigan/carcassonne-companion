@@ -154,6 +154,23 @@ export interface Strings {
   customColor: string
   chooseCustom: string
   inUse: (name: string) => string
+
+  // Multiplayer / room
+  playOnMultipleDevices: string
+  shareGame: string
+  roomTitle: string
+  roomCode: string
+  joinByCode: string
+  enterCode: string
+  join: string
+  copyLink: string
+  linkCopied: string
+  scanToJoin: string
+  leaveRoom: string
+  confirmLeaveRoom: string
+  statusConnecting: string
+  statusConnected: string
+  statusReconnecting: string
 }
 
 const en: Strings = {
@@ -300,6 +317,22 @@ const en: Strings = {
   customColor: 'Custom color',
   chooseCustom: 'Choose a custom color',
   inUse: (name) => `${name} (in use)`,
+
+  playOnMultipleDevices: 'Play on multiple devices',
+  shareGame: 'Share game',
+  roomTitle: 'Shared game',
+  roomCode: 'Room code',
+  joinByCode: 'Join by code',
+  enterCode: 'Enter code',
+  join: 'Join',
+  copyLink: 'Copy link',
+  linkCopied: 'Copied!',
+  scanToJoin: 'Scan to join',
+  leaveRoom: 'Leave room',
+  confirmLeaveRoom: 'Leave this shared game? Your device returns to solo play.',
+  statusConnecting: 'Connecting…',
+  statusConnected: 'Live',
+  statusReconnecting: 'Reconnecting…',
 }
 
 // Russian uses the official Carcassonne (Hobby World) rule terms:
@@ -451,6 +484,22 @@ const ru: Strings = {
   customColor: 'Свой цвет',
   chooseCustom: 'Выберите свой цвет',
   inUse: (name) => `${name} (занят)`,
+
+  playOnMultipleDevices: 'Играть на нескольких устройствах',
+  shareGame: 'Поделиться игрой',
+  roomTitle: 'Общая игра',
+  roomCode: 'Код комнаты',
+  joinByCode: 'Войти по коду',
+  enterCode: 'Введите код',
+  join: 'Войти',
+  copyLink: 'Скопировать ссылку',
+  linkCopied: 'Скопировано!',
+  scanToJoin: 'Отсканируйте, чтобы войти',
+  leaveRoom: 'Выйти из комнаты',
+  confirmLeaveRoom: 'Выйти из общей игры? Устройство вернётся к одиночной игре.',
+  statusConnecting: 'Подключение…',
+  statusConnected: 'В сети',
+  statusReconnecting: 'Переподключение…',
 }
 
 const TABLES: Record<Lang, Strings> = { en, ru }
