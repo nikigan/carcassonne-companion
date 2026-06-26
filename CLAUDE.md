@@ -18,12 +18,16 @@ Worker + Durable Object layer; solo remains the default. Bilingual (English / Ru
 ```bash
 npm install      # install deps
 npm run dev      # dev server (http://localhost:5173)
+npm run dev:lan  # dev server exposed on the LAN (vite --host) — test on a phone
 npm run build    # tsc -b && vite build  → ALWAYS run before committing
 npm run preview  # serve the production build (http://localhost:4173)
+npm run test:run # vitest run (one-shot); `npm test` for watch mode
 ```
 
-There is no test runner or linter configured. **`npm run build` is the gate** —
-it type-checks (strict) and builds. Keep it green.
+Tests run on **Vitest** (`src/**/*.test.ts`, currently the multiplayer game
+logic — `reducer`, `roomSync`, `protocol`). There is no linter configured.
+**The gate before committing is `npm run build` (strict type-check + build)
+AND `npm run test:run` green** — keep both passing.
 
 ## Architecture
 
