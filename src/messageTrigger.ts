@@ -1,3 +1,5 @@
+import type { ScoreDescriptor } from './types'
+
 /**
  * The Messengers trigger (see useMessageAlerts). A player earns a message when
  * one of their two scoring figures lands on a multiple of 5. With the optimal
@@ -11,4 +13,16 @@
  */
 export function messageQualifies(amount: number, total: number): boolean {
   return amount > 0 && (amount % 5 === 0 || total % 5 === 0)
+}
+
+/**
+ * Trade goods and gold are tallied in one batch *after* play ends (the menu's
+ * "Score …" actions), so they never move a figure during the game and must not
+ * draw a message. Every other score is an in-play feature/manual move that can.
+ */
+const END_GAME_KINDS = new Set<ScoreDescriptor['kind']>(['gold', 'goodsBonus'])
+
+/** Whether a score of this kind can draw a message (i.e. is an in-play move). */
+export function kindCanTriggerMessage(kind: ScoreDescriptor['kind']): boolean {
+  return !END_GAME_KINDS.has(kind)
 }

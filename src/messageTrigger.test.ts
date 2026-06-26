@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { messageQualifies } from './messageTrigger'
+import { kindCanTriggerMessage, messageQualifies } from './messageTrigger'
 
 describe('messageQualifies', () => {
   it('fires when the points scored are a multiple of 5 (messenger move)', () => {
@@ -20,5 +20,29 @@ describe('messageQualifies', () => {
   it('ignores zero and negative changes (no forward landing)', () => {
     expect(messageQualifies(0, 5)).toBe(false)
     expect(messageQualifies(-1, 5)).toBe(false)
+  })
+})
+
+describe('kindCanTriggerMessage', () => {
+  it('excludes end-of-game tallies (gold, trade goods)', () => {
+    expect(kindCanTriggerMessage('gold')).toBe(false)
+    expect(kindCanTriggerMessage('goodsBonus')).toBe(false)
+  })
+
+  it('allows in-play feature and manual scores', () => {
+    for (const kind of [
+      'road',
+      'city',
+      'cloister',
+      'field',
+      'castle',
+      'message',
+      'circus',
+      'acrobats',
+      'ringmaster',
+      'manual',
+    ] as const) {
+      expect(kindCanTriggerMessage(kind)).toBe(true)
+    }
   })
 })

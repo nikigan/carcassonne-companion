@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameState, ScoreEntry } from './types'
 import { MANUAL_MERGE_WINDOW } from './game/reducer'
-import { messageQualifies } from './messageTrigger'
+import { kindCanTriggerMessage, messageQualifies } from './messageTrigger'
 import { playMessageChime } from './sound'
 
 const SOUND_KEY = 'carcassonne-companion:sound'
@@ -107,12 +107,15 @@ export function useMessageAlerts(state: GameState): MessageAlerts {
     prevLen.current = log.length
 
     if (enabled) {
-      // Discrete scores: judge immediately when a single new entry appears.
+      // Discrete in-play scores: judge immediately when a single new entry
+      // appears. Manual is debounced below; end-game tallies (gold, trade
+      // goods) never draw a message.
       if (
         top &&
         grew &&
         !seen.current.has(top.id) &&
-        top.desc.kind !== 'manual'
+        top.desc.kind !== 'manual' &&
+        kindCanTriggerMessage(top.desc.kind)
       ) {
         const player = state.players.find((p) => p.id === top.playerId)
         if (player && messageQualifies(top.amount, player.score)) fire(player.id)
