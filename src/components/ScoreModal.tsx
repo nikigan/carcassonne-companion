@@ -47,6 +47,8 @@ interface Props {
   recentFeatures: CastleEntry[]
   /** Active expansions — gates which scoring inputs appear. */
   expansions: ExpansionConfig
+  /** Pre-select this feature in the Features grid (e.g. 'message' from a badge). */
+  initialFeature?: FeatureType
   onClose: () => void
   onScore: (amount: number, desc: ScoreDescriptor) => void
   onRecordTokens: (delta: TokenDelta) => void
@@ -59,6 +61,7 @@ export function ScoreModal({
   player,
   recentFeatures,
   expansions,
+  initialFeature,
   onClose,
   onScore,
   onRecordTokens,
@@ -131,6 +134,7 @@ export function ScoreModal({
             onApply={apply}
             recentFeatures={recentFeatures}
             expansions={expansions}
+            initialFeature={initialFeature}
           />
         )}
         {tab === 'goods' && showGoodsTab && (
@@ -155,13 +159,15 @@ function PresetForms({
   onApply,
   recentFeatures,
   expansions,
+  initialFeature,
 }: {
   onApply: ApplyFn
   recentFeatures: CastleEntry[]
   expansions: ExpansionConfig
+  initialFeature?: FeatureType
 }) {
   const { t } = useI18n()
-  const [feature, setFeature] = useState<FeatureType>('road')
+  const [feature, setFeature] = useState<FeatureType>(initialFeature ?? 'road')
 
   const features: FeatureType[] = [
     'road',
