@@ -117,9 +117,12 @@ is shared by the React client AND the Worker (`src/server/index.ts`), which rout
 else. Clients update optimistically (confirmed-base + pending replay,
 `src/game/roomSync.ts`) and reconcile on the server echo. Rooms are seeded from
 the current local game; join by `/r/<code>` URL, QR of that URL, or 6-char code.
-Per-room state caches in `localStorage`; auto-reconnect with snapshot resync. Solo
-(no-room) play is unchanged and remains the default. `npm run dev` runs the client
-+ DO together via `@cloudflare/vite-plugin`.
+Per-room state caches in `localStorage`; auto-reconnect with snapshot resync. The
+room creator is host — only they can reset / start a new game (token-gated) — and
+idle rooms self-expire after 7 days (DO alarm). Solo (no-room) play is unchanged
+and remains the default. `npm run dev` runs the client + DO together via
+`@cloudflare/vite-plugin`. Room logic lives in `src/useRoom.ts` (composed by
+`useGame`).
 
 Design spec: `docs/superpowers/specs/2026-06-26-multiplayer-rooms-design.md`.
 Rationale and architecture notes: [`docs/multiplayer.md`](docs/multiplayer.md).
