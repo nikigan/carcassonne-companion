@@ -2,16 +2,26 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "carcassonne-companion",
   "compatibility_date": "2026-06-26",
+  "main": "src/server/index.ts",
 
-  // Assets-only Worker: Cloudflare serves the built SPA from ./dist directly.
-  // No server code today. A multiplayer backend can be added later by introducing
-  // a "main" entry (+ Durable Objects bindings) alongside this same config.
+  // The @cloudflare/vite-plugin builds the client into dist/client and injects
+  // the assets directory at build time, so we only declare the binding + SPA
+  // fallback here (no "directory").
   "assets": {
-    "directory": "./dist",
+    "binding": "ASSETS",
     // SPA fallback: unmatched routes return 200 + index.html so client-side
     // navigation / deep links work.
     "not_found_handling": "single-page-application"
   },
+
+  // One SQLite-backed Durable Object per game room holds the authoritative
+  // GameState and brokers WebSocket connections.
+  "durable_objects": {
+    "bindings": [{ "name": "GAME_ROOM", "class_name": "GameRoom" }]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["GameRoom"] }
+  ],
 
   // Custom domain on the gankin.xyz zone. Wrangler auto-provisions the DNS record
   // and TLS certificate on first deploy.

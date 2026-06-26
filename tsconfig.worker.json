@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    // [] disables auto-including unrelated @types (e.g. @types/react, which
+    // pulls DOM and would clash with the no-DOM worker lib). The Cloudflare
+    // runtime globals + `cloudflare:workers` module come from the generated
+    // worker-configuration.d.ts, which we surface by listing it in `include`.
+    "types": [],
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/server", "worker-configuration.d.ts"]
+}
