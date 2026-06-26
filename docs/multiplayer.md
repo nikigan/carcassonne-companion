@@ -43,9 +43,14 @@ player C ─┘                static assets ◀──        │  authoritative
 - **`useGame` already exposes intent-named actions** (`addScore`, `recordTokens`,
   `scoreTradeGoods`, `undoEntry`, …). Those map almost 1:1 onto **DO RPC methods**
   / WebSocket message types. The DO becomes the server-side mirror of `useGame`.
-- **`localStorage` stays as the offline / solo fallback.** Solo games never open
-  a socket; multiplayer games treat the DO as the source of truth and use
-  `localStorage` only as a local cache for fast reload + reconnection.
+- **The source of truth is decided by one thing: does a game room exist?**
+  - **No room → `localStorage` is authoritative, exactly as today.** No socket is
+    opened and `useGame` behaves identically to the current single-device app.
+    This is also precisely what "offline" means — so **"offline" and "no room"
+    are the same state**, and there is no separate offline code path to build or
+    keep in sync.
+  - **Room exists → the DO is authoritative.** `localStorage` drops to a local
+    cache used only for fast reload + reconnection.
 
 ## Worker + DO sketch
 
@@ -111,7 +116,11 @@ Note: once `main` + `assets.binding` exist, asset requests are still served
 directly (free, no Worker invocation); the Worker only runs for `/api/*`.
 
 ## Client changes (`src/useGame.ts`)
-- Add a `roomCode` concept: create a room (random short code) or join one.
+- **Default mode is "no room":** state lives in `localStorage` and `useGame` runs
+  exactly as today. Going offline changes nothing — offline *is* "no room", so the
+  same path covers both.
+- Add a `roomCode` concept: create a room (random short code) or join one. Only
+  this switches the source of truth to the DO.
 - When in a room, open `wss://carcassonne.gankin.xyz/api/room/<code>/ws`.
 - On `snapshot` → replace local state; on `entry` → append to the log + recompute.
 - Route the existing actions through the socket instead of mutating locally
