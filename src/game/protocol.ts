@@ -27,5 +27,11 @@ export function roomPath(code: string): string {
 /** Extract a room code from a path like `/r/ABC123`, else null. */
 export function roomCodeFromPath(path: string): string | null {
   const m = path.match(/^\/r\/([A-Za-z0-9]+)\/?$/)
-  return m ? m[1].toUpperCase() : null
+  if (!m) return null
+  const candidate = m[1].toUpperCase()
+  if (candidate.length !== ROOM_CODE_LENGTH) return null
+  for (const ch of candidate) {
+    if (!ROOM_CODE_ALPHABET.includes(ch)) return null
+  }
+  return candidate
 }

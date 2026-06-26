@@ -25,12 +25,12 @@ export class RoomConnection {
   constructor(code: string, handlers: RoomHandlers) {
     this.code = code
     this.handlers = handlers
+    this.handlers.onStatus('connecting')
     this.connect()
   }
 
   private connect() {
     if (this.closed) return
-    this.handlers.onStatus(this.backoff === 500 ? 'connecting' : 'reconnecting')
     const ws = new WebSocket(wsUrl(this.code))
     this.ws = ws
     ws.onopen = () => {
@@ -61,6 +61,14 @@ export class RoomConnection {
   send(msg: ClientMessage) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(msg))
     else this.outbox.push(msg)
+  }
+
+  /**
+   * Drop the current socket without setting `closed`, so `onclose` schedules
+   * a reconnect (which requests a fresh snapshot from the server).
+   */
+  forceReconnect(): void {
+    if (!this.closed) this.ws?.close()
   }
 
   close() {

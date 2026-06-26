@@ -63,9 +63,10 @@ export function useGame() {
         if (!syncRef.current) return
         const r = applyServerAction(syncRef.current, msg)
         syncRef.current = r.state
+        // A seq gap means we missed an action. Force a reconnect so the server
+        // sends a fresh snapshot and reconciles the gap immediately.
+        if (r.needSnapshot) conn.forceReconnect()
         pushDisplayed()
-        // On a seq gap the server re-snapshots on our next reconnect, so the
-        // missed action is reconciled then; nothing else to do here.
       },
       onStatus: (status) => setRoom((r) => (r ? { ...r, status } : r)),
     })
@@ -143,16 +144,19 @@ export function useGame() {
   }, [state, openConnection])
 
   const joinRoom = useCallback((code: string) => {
-    // Paint instantly from cache when we've seen this room before; the snapshot
-    // that follows the socket open reconciles us to the server's truth.
+    // Always initialize sync so dispatch takes the room path immediately,
+    // queueing any optimistic actions until the first snapshot arrives.
+    // Use the cached state as the confirmed base when available; otherwise
+    // use the current displayed state as a placeholder (the real snapshot
+    // will replace it and replay any pending actions on top).
     const cached = loadRoomCache(code)
-    syncRef.current = cached ? initialSync(cached, 0) : null
-    if (cached) setState(cached)
+    syncRef.current = initialSync(cached ?? state, 0)
+    setState(displayedState(syncRef.current))
     saveActiveRoom(code)
     history.pushState(null, '', roomPath(code))
     setRoom({ code, status: 'connecting' })
     openConnection(code)
-  }, [openConnection])
+  }, [state, openConnection])
 
   const leaveRoom = useCallback(() => {
     connRef.current?.close()
