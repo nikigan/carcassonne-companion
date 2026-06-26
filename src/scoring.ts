@@ -19,6 +19,7 @@ export type FeatureType =
   | 'circus'
   | 'acrobats'
   | 'ringmaster'
+  | 'fairy'
 
 /** Emoji shown for each game feature (and for manual adjustments). */
 export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
@@ -32,6 +33,7 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
   circus: '🎪',
   acrobats: '🤸',
   ringmaster: '🎩',
+  fairy: '🧚',
   manual: '✏️',
 }
 
@@ -183,3 +185,13 @@ export function scoreAcrobats(count: number): number {
 export function scoreRingmaster(tiles: number): number {
   return clamp(tiles) * RINGMASTER_PER_TILE
 }
+
+/* ------------------------------------------------------------------ *
+ * The Princess & the Dragon (the Fairy)
+ * ------------------------------------------------------------------ */
+
+/** Fairy bonus at the start of your turn when it shares a follower's tile. */
+export const FAIRY_TURN_BONUS = 1
+
+/** Fairy bonus when a feature is scored with a follower on its tile. */
+export const FAIRY_FEATURE_BONUS = 3

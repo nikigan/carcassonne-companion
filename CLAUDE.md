@@ -18,16 +18,17 @@ Worker + Durable Object layer; solo remains the default. Bilingual (English / Ru
 ```bash
 npm install      # install deps
 npm run dev      # dev server (http://localhost:5173)
+npm run dev:lan  # dev server exposed on the LAN (vite --host) — test on a phone
 npm run build    # tsc -b && vite build  → ALWAYS run before committing
 npm run preview  # serve the production build (http://localhost:4173)
-npm run test:run # run the Vitest suite once (CI-style)
+npm run test:run # vitest run (one-shot); `npm test` for watch mode
 ```
 
-No linter is configured. **`npm run build` is the gate** — it type-checks
-(strict) and builds; keep it green. Pure logic is covered by **Vitest**
-(`*.test.ts`, e.g. `src/game/reducer.test.ts`, `src/messageTrigger.test.ts`);
-run `npm run test:run` (one-shot) or `npm test` (watch). There is no
-DOM/component test setup, so hooks/components are verified by running the app.
+No linter is configured. **The gate before committing is `npm run build`
+(strict type-check + build) AND `npm run test:run` green** — keep both passing.
+Pure/game logic is covered by **Vitest** (`src/**/*.test.ts` — e.g. `reducer`,
+`roomSync`, `protocol`, `messageTrigger`). There is no DOM/component test setup,
+so hooks/components are verified by running the app.
 
 ## Architecture
 
@@ -91,7 +92,10 @@ match the Hobby World 2019 "Новое издание" rulebook (поле, щи�
 Base game; Inns & Cathedrals (inn 🍺 on roads, cathedral ✝️ on cities);
 Traders & Builders (trade goods majorities, pig 🐷); Bridges, Castles & Bazaars
 (castle 🏯); Gold Mines (🟨 progressive: 1–3→1/ea, 4–6→2, 7–9→3, 10+→4 — scored
-from the menu at game end via `goldRate`); The Messages (📜 manual point entry).
+from the menu at game end via `goldRate`); The Messages (📜 manual point entry);
+The Mage & Witch (🧙 mage adds, 🧹 witch halves a road/city); Circus & Artists
+(🎪 Big Top animals, 🤸 acrobats, 🎩 ringmaster); The Princess & the Dragon (🧚
+fairy: +1 each turn, +3 when a feature scores).
 
 ## Deployment
 
@@ -143,7 +147,17 @@ still needs a connection. The service worker's navigation fallback denylists
 `apple-touch-icon`/`apple-mobile-web-app-*` meta live in `index.html`; the 🏰
 app icons are in `public/` (`pwa-*.png`, `apple-touch-icon-180x180.png`).
 
-Design spec: `docs/superpowers/specs/2026-06-26-pwa-design.md`.
+An **in-app QR scanner** (`src/components/QrScanModal.tsx`, using the `qr-scanner`
+library) lets a player join a room by scanning the host's QR from inside the PWA:
+the OS cannot route a scanned URL into an installed PWA on iOS (it always opens
+Safari), so the in-app camera is the only cross-platform join-by-QR path. The
+overlay renders through a `createPortal` to `<body>` because the join controls
+sit inside a `backdrop-blur` action bar (a containing block for `position:fixed`).
+The manifest also carries Android-only `launch_handler`/`handle_links` hints so
+Chrome can capture in-scope `/r/<code>` links — a no-op on iOS.
+
+Design specs: `docs/superpowers/specs/2026-06-26-pwa-design.md`,
+`docs/superpowers/specs/2026-06-26-pwa-qr-scanner-design.md`.
 
 ## Git
 

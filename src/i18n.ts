@@ -134,6 +134,11 @@ export interface Strings {
   ringmasterHint: string
   animalNames: Record<CircusAnimal, string>
 
+  // The Princess & the Dragon
+  fairyTurnBonus: string
+  fairyFeatureBonus: string
+  fairyHint: string
+
   // Expansion configuration
   expansionsTitle: string
   expansionsHint: string
@@ -166,6 +171,11 @@ export interface Strings {
   copyLink: string
   linkCopied: string
   scanToJoin: string
+  scanQr: string
+  scanQrHint: string
+  scanCameraDenied: string
+  scanNoCamera: string
+  scanInvalidQr: string
   leaveRoom: string
   confirmLeaveRoom: string
   statusConnecting: string
@@ -218,6 +228,7 @@ const en: Strings = {
     circus: 'Circus',
     acrobats: 'Acrobats',
     ringmaster: 'Ringmaster',
+    fairy: 'Fairy',
   },
   tiles: 'Tiles',
   pennants: 'Coat of arms',
@@ -283,11 +294,17 @@ const en: Strings = {
     flea: 'Flea',
   },
 
+  fairyTurnBonus: 'Start of turn',
+  fairyFeatureBonus: 'Feature bonus',
+  fairyHint:
+    '+1 when the fairy starts your turn beside your meeple; +3 when a feature scores with the fairy.',
+
   expansionsTitle: 'Expansions',
   expansionsHint: 'Pick what you’re playing — the rest stays out of the way.',
   expansionNames: {
     innsCathedrals: 'Inns & Cathedrals',
     tradersBuilders: 'Traders & Builders',
+    princessDragon: 'The Princess & the Dragon',
     bridgesCastlesBazaars: 'Bridges, Castles & Bazaars',
     goldMines: 'Gold Mines',
     messages: 'The Messengers',
@@ -297,6 +314,7 @@ const en: Strings = {
   expansionDescriptions: {
     innsCathedrals: 'Inns on roads, cathedrals in cities.',
     tradersBuilders: 'Trade goods majorities and the pig.',
+    princessDragon: 'The fairy: +1 each turn, +3 when a feature scores.',
     bridgesCastlesBazaars: 'Castles.',
     goldMines: 'Gold ingots, scored at game end.',
     messages: 'Auto-alerts message tiles (manual points).',
@@ -338,6 +356,11 @@ const en: Strings = {
   copyLink: 'Copy link',
   linkCopied: 'Copied!',
   scanToJoin: 'Scan to join',
+  scanQr: 'Scan QR',
+  scanQrHint: 'Point at the room QR',
+  scanCameraDenied: 'Camera access denied. Enable it in settings, or join by code.',
+  scanNoCamera: 'No camera available. Join by code instead.',
+  scanInvalidQr: "That's not a room QR.",
   leaveRoom: 'Leave room',
   confirmLeaveRoom: 'Leave this shared game? Your device returns to solo play.',
   statusConnecting: 'Connecting…',
@@ -390,6 +413,7 @@ const ru: Strings = {
     circus: 'Цирк',
     acrobats: 'Акробаты',
     ringmaster: 'Директор',
+    fairy: 'Фея',
   },
   tiles: 'Тайлы',
   pennants: 'Щиты',
@@ -458,11 +482,17 @@ const ru: Strings = {
     flea: 'Блоха',
   },
 
+  fairyTurnBonus: 'В начале хода',
+  fairyFeatureBonus: 'Бонус за объект',
+  fairyHint:
+    '+1, если в начале хода фея рядом с вашим миплом; +3 при подсчёте объекта с феей.',
+
   expansionsTitle: 'Дополнения',
   expansionsHint: 'Выберите, во что играете — лишнее не будет мешать.',
   expansionNames: {
     innsCathedrals: 'Трактиры и соборы',
     tradersBuilders: 'Купцы и строители',
+    princessDragon: 'Принцесса и дракон',
     bridgesCastlesBazaars: 'Мосты, замки и базары',
     goldMines: 'Золотые жилы',
     messages: 'Гонцы',
@@ -472,6 +502,7 @@ const ru: Strings = {
   expansionDescriptions: {
     innsCathedrals: 'Трактиры на дорогах, соборы в городах.',
     tradersBuilders: 'Большинство товаров и свинья.',
+    princessDragon: 'Фея: +1 за ход, +3 при подсчёте объекта.',
     bridgesCastlesBazaars: 'Замки.',
     goldMines: 'Слитки золота, подсчёт в конце игры.',
     messages: 'Оповещает о тайлах посланий (очки вручную).',
@@ -513,6 +544,11 @@ const ru: Strings = {
   copyLink: 'Скопировать ссылку',
   linkCopied: 'Скопировано!',
   scanToJoin: 'Отсканируйте, чтобы войти',
+  scanQr: 'Сканировать QR',
+  scanQrHint: 'Наведите на QR-код комнаты',
+  scanCameraDenied: 'Доступ к камере запрещён. Разрешите его в настройках или войдите по коду.',
+  scanNoCamera: 'Камера недоступна. Войдите по коду.',
+  scanInvalidQr: 'Это не QR-код комнаты.',
   leaveRoom: 'Выйти из комнаты',
   confirmLeaveRoom: 'Выйти из общей игры? Устройство вернётся к одиночной игре.',
   statusConnecting: 'Подключение…',
@@ -584,6 +620,10 @@ function formatEn(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.acrobats} Acrobats ×${d.count}`
     case 'ringmaster':
       return `${FEATURE_EMOJI.ringmaster} Ringmaster (${d.tiles} ${pluralEn(d.tiles, 'tile', 'tiles')})`
+    case 'fairy':
+      return d.bonus === 1
+        ? `${FEATURE_EMOJI.fairy} Fairy +1 (start of turn)`
+        : `${FEATURE_EMOJI.fairy} Fairy +3 (feature)`
     case 'goodsBonus':
       return `${GOODS_EMOJI[d.good]} ${capitalize(d.good)} majority`
     case 'manual':
@@ -633,6 +673,10 @@ function formatRu(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.acrobats} Акробаты ×${d.count}`
     case 'ringmaster':
       return `${FEATURE_EMOJI.ringmaster} Директор (${d.tiles} ${pluralRu(d.tiles, ['тайл', 'тайла', 'тайлов'])})`
+    case 'fairy':
+      return d.bonus === 1
+        ? `${FEATURE_EMOJI.fairy} Фея +1 (начало хода)`
+        : `${FEATURE_EMOJI.fairy} Фея +3 (объект)`
     case 'goodsBonus': {
       const names: Record<typeof d.good, string> = {
         wine: 'вино',
