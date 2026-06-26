@@ -35,13 +35,13 @@ export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
             onClick={() => onChange(c.hex)}
             className={`relative h-9 w-9 rounded-full border-2 transition ${
               selected
-                ? 'border-white ring-2 ring-white/70 scale-110'
-                : 'border-white/20 hover:border-white/50'
+                ? 'border-line ring-2 ring-line/70 scale-110'
+                : 'border-line/20 hover:border-line/50'
             }`}
             style={{ backgroundColor: c.hex }}
           >
             {taken && (
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white/80">
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-fg/80">
                 •
               </span>
             )}
@@ -51,7 +51,7 @@ export function ColorPicker({ value, onChange, usedHexes = [] }: Props) {
 
       <label
         className={`relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 ${
-          valueIsCustom ? 'border-white ring-2 ring-white/70' : 'border-white/20'
+          valueIsCustom ? 'border-line ring-2 ring-line/70' : 'border-line/20'
         }`}
         title={t.customColor}
         style={{

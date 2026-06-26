@@ -23,7 +23,7 @@ export function ExpansionPicker({ config, onToggle }: Props) {
               role="switch"
               aria-checked={on}
               onClick={() => onToggle(id, !on)}
-              className="flex w-full items-center gap-3 rounded-xl bg-white/5 p-3 text-left transition hover:bg-white/10 active:scale-[0.99]"
+              className="flex w-full items-center gap-3 rounded-xl bg-overlay/5 p-3 text-left transition hover:bg-overlay/10 active:scale-[0.99]"
             >
               <span className="text-xl leading-none" aria-hidden>
                 {emoji}
@@ -32,13 +32,13 @@ export function ExpansionPicker({ config, onToggle }: Props) {
                 <span className="block text-sm font-semibold">
                   {t.expansionNames[id]}
                 </span>
-                <span className="block text-xs text-white/50">
+                <span className="block text-xs text-fg/50">
                   {t.expansionDescriptions[id]}
                 </span>
               </span>
               <span
                 className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-                  on ? 'bg-emerald-500' : 'bg-white/20'
+                  on ? 'bg-emerald-500' : 'bg-overlay/20'
                 }`}
               >
                 <span

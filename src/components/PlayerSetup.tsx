@@ -72,13 +72,13 @@ export function PlayerSetup({
       {/* Players — left column on tablets+ */}
       <div>
         <h2 className="mb-1 text-2xl font-bold">{t.playersHeading}</h2>
-        <p className="mb-5 text-sm text-white/60">{t.playersHint}</p>
+        <p className="mb-5 text-sm text-fg/60">{t.playersHint}</p>
 
         <ul className="mb-5 space-y-2">
           {players.map((p) => (
             <li
               key={p.id}
-              className="flex items-center gap-3 rounded-xl bg-white/5 p-2.5"
+              className="flex items-center gap-3 rounded-xl bg-overlay/5 p-2.5"
             >
               <span
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold"
@@ -93,10 +93,10 @@ export function PlayerSetup({
                 aria-label={t.playerNameAria}
               />
               <details className="relative">
-                <summary className="cursor-pointer list-none rounded-lg px-2 py-1 text-xs text-white/60 hover:bg-white/10">
+                <summary className="cursor-pointer list-none rounded-lg px-2 py-1 text-xs text-fg/60 hover:bg-overlay/10">
                   {t.colorLabel}
                 </summary>
-                <div className="absolute right-0 z-10 mt-2 w-64 rounded-xl border border-white/10 bg-gray-800 p-3 shadow-xl">
+                <div className="absolute right-0 z-10 mt-2 w-64 rounded-xl border border-line/10 bg-surface p-3 shadow-xl">
                   <ColorPicker
                     value={p.color}
                     onChange={(hex) => onUpdate(p.id, { color: hex })}
@@ -107,7 +107,7 @@ export function PlayerSetup({
               <button
                 type="button"
                 onClick={() => onRemove(p.id)}
-                className="rounded-lg px-2 py-1 text-white/40 hover:bg-white/10 hover:text-red-400"
+                className="rounded-lg px-2 py-1 text-fg/40 hover:bg-overlay/10 hover:text-red-400"
                 aria-label={t.removePlayerAria(p.name)}
               >
                 ✕
@@ -115,20 +115,20 @@ export function PlayerSetup({
             </li>
           ))}
           {players.length === 0 && (
-            <li className="rounded-xl border border-dashed border-white/10 p-4 text-center text-sm text-white/40">
+            <li className="rounded-xl border border-dashed border-line/10 p-4 text-center text-sm text-fg/40">
               {t.noPlayers}
             </li>
           )}
         </ul>
 
-        <div className="rounded-2xl bg-white/5 p-4">
+        <div className="rounded-2xl bg-overlay/5 p-4">
           <div className="mb-3 flex gap-2">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submit()}
               placeholder={t.playerNamePlaceholder}
-              className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-base outline-none ring-1 ring-white/10 focus:ring-white/30"
+              className="min-w-0 flex-1 rounded-lg bg-field px-3 py-2 text-base outline-none ring-1 ring-line/10 focus:ring-line/30"
             />
             <button
               type="button"
@@ -144,16 +144,16 @@ export function PlayerSetup({
 
       {/* Expansions — right column on tablets+ */}
       <div className="mt-6 md:mt-0">
-        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-white/40">
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-fg/40">
           {t.expansionsTitle}
         </h3>
-        <p className="mb-3 text-xs text-white/50">{t.expansionsHint}</p>
+        <p className="mb-3 text-xs text-fg/50">{t.expansionsHint}</p>
         <ExpansionPicker config={expansions} onToggle={onToggleExpansion} />
       </div>
 
       <div
         ref={barRef}
-        className="fixed inset-x-0 bottom-0 border-t border-white/10 bg-gray-900/90 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur"
+        className="fixed inset-x-0 bottom-0 border-t border-line/10 bg-canvas/90 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur"
       >
         <div className="mx-auto w-full max-w-md space-y-2">
           <button
@@ -169,11 +169,11 @@ export function PlayerSetup({
               <button
                 type="button"
                 onClick={onCreateRoom}
-                className="block w-full rounded-xl bg-white/5 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10"
+                className="block w-full rounded-xl bg-overlay/5 py-2.5 text-sm font-medium text-fg/70 hover:bg-overlay/10"
               >
                 {t.playOnMultipleDevices}
               </button>
-              <div className="pt-0.5 text-xs font-medium text-white/40">{t.joinByCode}</div>
+              <div className="pt-0.5 text-xs font-medium text-fg/40">{t.joinByCode}</div>
               <div className="flex gap-2">
                 <input
                   value={joinCode}
@@ -181,12 +181,12 @@ export function PlayerSetup({
                   onKeyDown={(e) => { if (e.key === 'Enter' && joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
                   placeholder={t.enterCode}
                   maxLength={6}
-                  className="min-w-0 flex-1 rounded-lg bg-black/30 px-3 py-2 text-sm font-mono tracking-widest outline-none ring-1 ring-white/10 focus:ring-white/30 uppercase"
+                  className="min-w-0 flex-1 rounded-lg bg-field px-3 py-2 text-sm font-mono tracking-widest outline-none ring-1 ring-line/10 focus:ring-line/30 uppercase"
                 />
                 <button
                   type="button"
                   onClick={() => { if (joinCode.length > 0) { onJoinRoom(joinCode); setJoinCode('') } }}
-                  className="shrink-0 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                  className="shrink-0 rounded-lg bg-overlay/10 px-4 py-2 text-sm font-semibold text-fg hover:bg-overlay/15"
                 >
                   {t.join}
                 </button>
@@ -194,7 +194,7 @@ export function PlayerSetup({
               <button
                 type="button"
                 onClick={() => setScanning(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-overlay/10 py-2.5 text-sm font-semibold text-fg hover:bg-overlay/15"
               >
                 <span aria-hidden>▣</span> {t.scanQr}
               </button>
