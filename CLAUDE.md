@@ -20,10 +20,14 @@ npm install      # install deps
 npm run dev      # dev server (http://localhost:5173)
 npm run build    # tsc -b && vite build  → ALWAYS run before committing
 npm run preview  # serve the production build (http://localhost:4173)
+npm run test:run # run the Vitest suite once (CI-style)
 ```
 
-There is no test runner or linter configured. **`npm run build` is the gate** —
-it type-checks (strict) and builds. Keep it green.
+No linter is configured. **`npm run build` is the gate** — it type-checks
+(strict) and builds; keep it green. Pure logic is covered by **Vitest**
+(`*.test.ts`, e.g. `src/game/reducer.test.ts`, `src/messageTrigger.test.ts`);
+run `npm run test:run` (one-shot) or `npm test` (watch). There is no
+DOM/component test setup, so hooks/components are verified by running the app.
 
 ## Architecture
 

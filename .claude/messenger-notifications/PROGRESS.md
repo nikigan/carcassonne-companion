@@ -23,6 +23,19 @@ score 5 → badge + toast; score 3 → none; score 2 (total 5) → badge (meeple
 path); ✕ dismisses one badge; tapping a chip opens that player's Message form
 pre-selected and clears all badges; EN/RU rename verified; no console errors.
 
+## Follow-up: manual debounce (done)
+Manual points are entered incrementally and the reducer coalesces a burst
+(within MANUAL_MERGE_WINDOW=3s) into one entry whose `amount` is the running
+net. The hook now judges manual entries on their **settled net** (timer
+re-armed on each change, fires at MANUAL_MERGE_WINDOW+300ms) instead of per
+tap — so nudging e.g. 19→22 (passes 20) no longer misfires.
+- Extracted pure `src/messageTrigger.ts` (`messageQualifies`) + Vitest
+  `src/messageTrigger.test.ts` (4 cases). Exported `MANUAL_MERGE_WINDOW` from
+  `src/game/reducer.ts`.
+- Verified live: 19→22 (passes 20) → no alert; 10→15 (net 5) → alert after
+  settle. All 29 tests pass; build green.
+- Note: project DOES have Vitest (CLAUDE.md was stale; fixed).
+
 ## Notes
 - No test runner; `npm run build` is the gate.
 - Commits carry no AI co-author trailer (global rule; removed from CLAUDE.md).

@@ -46,29 +46,32 @@ event**, matching "lands on" (never double-counting a passed dark space).
 ## Trigger engine — `useMessageAlerts`
 
 A new, isolated hook `src/useMessageAlerts.ts` owns all alert state. It is **ephemeral
-UI state**, not part of `GameState`/localStorage.
+UI state**, not part of `GameState`/localStorage. The pure decision is extracted to
+`src/messageTrigger.ts` (`messageQualifies(amount, total)`, unit-tested):
 
-- It watches `state.log`. It fires **only when a single new entry is prepended**
-  (`log.length` grew by 1 and `log[0].id` is unseen). Undo (length shrinks), initial
-  load, and multiplayer snapshot-resync (bulk change) therefore never fire it.
-- Entry ids are tracked in a `Set` so multiplayer's optimistic-then-reconciled echo of
-  the same id cannot double-fire.
-- For the newest entry it evaluates:
+```
+messageQualifies(amount, total) =
+  amount > 0 && (amount % 5 === 0 || total % 5 === 0)
+```
 
-  ```
-  qualifies =
-       state.expansions.messages           // expansion enabled
-    && entry.amount > 0
-    && (entry.amount % 5 === 0  ||  player.score % 5 === 0)
-  ```
+It watches `state.log` and runs on **any** points source (features, trade goods, gold,
+manual), all of which move a figure. Entry ids are tracked in a `Set` so multiplayer's
+optimistic-then-reconciled echo of the same id cannot double-fire; initial load and
+snapshot-resync are seeded as history and never alert.
 
-  `player.score` is the player's current total — valid because the newest entry is the
-  last one applied.
+**Discrete scores** (features, goods, gold, message tiles) are judged the moment a
+single new entry is prepended, against `messageQualifies(entry.amount, player.score)`.
+A message tile's own points are a new score and can chain into another message — exactly
+as the rules allow.
 
-Because the check runs on **any** points source (features, trade goods, gold, manual),
-all of which move a figure, it correctly covers them all. A message tile's own points
-are entered as a new score and can therefore chain into another message — which is
-exactly how the rules work.
+**Manual points** need a debounce. The reducer coalesces a rapid manual burst into one
+log entry within `MANUAL_MERGE_WINDOW` (3 s) — the entry's `amount` is the running net —
+and ±1 taps would otherwise graze a multiple of 5 mid-burst (e.g. nudging 19→22 passes
+20). So the hook tracks each manual entry's net `amount` and (re)arms a settle timer on
+every change, judging it once — a hair past the merge window (`MANUAL_SETTLE =
+MANUAL_MERGE_WINDOW + 300 ms`) so no further taps can fold in — against the **settled
+net** and the final total. Tracking for an entry is dropped if it later vanishes (undo,
+or a burst netting to 0).
 
 The hook exposes:
 
@@ -190,7 +193,9 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
 ## Edge cases
 
 - `amount === 0` never reaches the hook (`addScore` rejects it) and is excluded anyway.
-- Negative amounts (manual corrections) do not trigger (`amount > 0`).
+- Negative amounts / a manual burst netting ≤ 0 do not trigger (`amount > 0`).
+- Incremental ±1 manual taps that graze a multiple of 5 mid-burst do **not** misfire —
+  only the settled net is judged.
 - Reload mid-resolution clears pending badges (ephemeral) — acceptable.
 - Message-tile points chaining into another message is allowed (rules-accurate).
 - Expansion disabled → hook is inert (gated on `state.expansions.messages`).
@@ -205,11 +210,13 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
 
 ## Verification
 
-- `npm run build` stays green (strict type-check is the gate; new i18n keys must exist
-  in both `en` and `ru`).
+- `npm run build` stays green (strict type-check; new i18n keys must exist in both `en`
+  and `ru`) and `npm run test:run` passes (incl. `messageTrigger.test.ts`).
 - Manual: enable The Messengers; score 5 / 10 → badge + toast + chime on that player;
   score 3 then 2 (total 5) → fires on the second; score 3 (total 3) → no fire; tap a
   badge chip → opens that player's 📜 Messages form and all badges clear; tap a badge's
   ✕ → only that player's badge goes, the rest stay; toggle Sound off → no chime,
   badge/toast still appear; reduced-motion → no pulse.
+- Manual debounce: rapidly tap +1 from 19→22 (passes 20) → **no** alert; tap +1 from
+  10→15 (net 5) → alert fires once the taps settle (~3.3 s). Verified live in-browser.
 ```
