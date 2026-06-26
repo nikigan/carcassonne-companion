@@ -134,6 +134,11 @@ export interface Strings {
   ringmasterHint: string
   animalNames: Record<CircusAnimal, string>
 
+  // The Princess & the Dragon
+  fairyTurnBonus: string
+  fairyFeatureBonus: string
+  fairyHint: string
+
   // Expansion configuration
   expansionsTitle: string
   expansionsHint: string
@@ -281,6 +286,11 @@ const en: Strings = {
     monkey: 'Monkey',
     flea: 'Flea',
   },
+
+  fairyTurnBonus: 'Start of turn',
+  fairyFeatureBonus: 'Feature bonus',
+  fairyHint:
+    '+1 when the fairy starts your turn beside your meeple; +3 when a feature scores with the fairy.',
 
   expansionsTitle: 'Expansions',
   expansionsHint: 'Pick what you’re playing — the rest stays out of the way.',
@@ -459,6 +469,11 @@ const ru: Strings = {
     monkey: 'Обезьяна',
     flea: 'Блоха',
   },
+
+  fairyTurnBonus: 'В начале хода',
+  fairyFeatureBonus: 'Бонус за объект',
+  fairyHint:
+    '+1, если в начале хода фея рядом с вашим миплом; +3 при подсчёте объекта с феей.',
 
   expansionsTitle: 'Дополнения',
   expansionsHint: 'Выберите, во что играете — лишнее не будет мешать.',

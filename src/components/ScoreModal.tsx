@@ -13,6 +13,8 @@ import {
   ANIMAL_EMOJI,
   ANIMAL_VALUE,
   CATHEDRAL_EMOJI,
+  FAIRY_FEATURE_BONUS,
+  FAIRY_TURN_BONUS,
   FEATURE_EMOJI,
   GOODS_EMOJI,
   INN_EMOJI,
@@ -170,6 +172,7 @@ function PresetForms({
     'field',
     ...(expansions.bridgesCastlesBazaars ? (['castle'] as const) : []),
     ...(expansions.messages ? (['message'] as const) : []),
+    ...(expansions.princessDragon ? (['fairy'] as const) : []),
     ...(expansions.circus
       ? (['circus', 'acrobats', 'ringmaster'] as const)
       : []),
@@ -226,6 +229,7 @@ function PresetForms({
       {active === 'circus' && <CircusForm onApply={onApply} />}
       {active === 'acrobats' && <AcrobatsForm onApply={onApply} />}
       {active === 'ringmaster' && <RingmasterForm onApply={onApply} />}
+      {active === 'fairy' && <FairyForm onApply={onApply} />}
     </div>
   )
 }
@@ -635,6 +639,31 @@ function RingmasterForm({ onApply }: { onApply: ApplyFn }) {
         desc={{ kind: 'ringmaster', tiles }}
         onApply={onApply}
       />
+    </div>
+  )
+}
+
+function FairyForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const bonuses: { bonus: 1 | 3; label: string }[] = [
+    { bonus: FAIRY_TURN_BONUS, label: t.fairyTurnBonus },
+    { bonus: FAIRY_FEATURE_BONUS, label: t.fairyFeatureBonus },
+  ]
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-2">
+        {bonuses.map(({ bonus, label }) => (
+          <button
+            key={bonus}
+            onClick={() => onApply(bonus, { kind: 'fairy', bonus })}
+            className="flex flex-col items-center gap-1 rounded-xl bg-emerald-500 py-4 text-white transition hover:bg-emerald-400 active:scale-[0.98]"
+          >
+            <span className="text-2xl font-bold tabular-nums">+{bonus}</span>
+            <span className="text-xs font-medium">{label}</span>
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-white/40">{t.fairyHint}</p>
     </div>
   )
 }

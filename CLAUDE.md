@@ -87,7 +87,10 @@ match the Hobby World 2019 "Новое издание" rulebook (поле, щи�
 Base game; Inns & Cathedrals (inn 🍺 on roads, cathedral ✝️ on cities);
 Traders & Builders (trade goods majorities, pig 🐷); Bridges, Castles & Bazaars
 (castle 🏯); Gold Mines (🟨 progressive: 1–3→1/ea, 4–6→2, 7–9→3, 10+→4 — scored
-from the menu at game end via `goldRate`); The Messages (📜 manual point entry).
+from the menu at game end via `goldRate`); The Messages (📜 manual point entry);
+The Mage & Witch (🧙 mage adds, 🧹 witch halves a road/city); Circus & Artists
+(🎪 Big Top animals, 🤸 acrobats, 🎩 ringmaster); The Princess & the Dragon (🧚
+fairy: +1 each turn, +3 when a feature scores).
 
 ## Deployment
 
