@@ -22,7 +22,7 @@ export default function App() {
 
   return (
     <div className="min-h-full bg-gray-900 text-white">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-gray-900/90 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-gray-900/90 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-xl" aria-hidden>
@@ -189,7 +189,7 @@ export default function App() {
           onClick={() => setExpansionsOpen(false)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 p-5 shadow-2xl sm:rounded-3xl"
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between gap-3">

@@ -86,7 +86,7 @@ export function ScoreModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 p-5 shadow-2xl sm:rounded-3xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center gap-3">

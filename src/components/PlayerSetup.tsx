@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { Player } from '../types'
 import type { ExpansionConfig, ExpansionId } from '../expansions'
 import { contrastText, nextAvailableColor } from '../colors'
@@ -39,6 +39,22 @@ export function PlayerSetup({
   const [color, setColor] = useState(() => nextAvailableColor(usedHexes))
   const [joinCode, setJoinCode] = useState('')
 
+  // The action bar is fixed to the viewport bottom; reserve exactly its height
+  // (it varies by language, wrapping, the safe-area inset, and whether the join
+  // controls show) so the scrollable content — the last expansions — is never
+  // hidden behind it.
+  const barRef = useRef<HTMLDivElement>(null)
+  const [barHeight, setBarHeight] = useState(0)
+  useLayoutEffect(() => {
+    const el = barRef.current
+    if (!el) return
+    const measure = () => setBarHeight(el.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [inRoom])
+
   const submit = () => {
     onAdd(name.trim() || t.defaultPlayerName(players.length + 1), color)
     setName('')
@@ -47,7 +63,10 @@ export function PlayerSetup({
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 pb-28 pt-6">
+    <div
+      className="mx-auto w-full max-w-md px-4 pt-6"
+      style={{ paddingBottom: barHeight + 24 }}
+    >
       <h2 className="mb-1 text-2xl font-bold">{t.playersHeading}</h2>
       <p className="mb-5 text-sm text-white/60">{t.playersHint}</p>
 
@@ -126,7 +145,10 @@ export function PlayerSetup({
         <ExpansionPicker config={expansions} onToggle={onToggleExpansion} />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-white/10 bg-gray-900/90 p-4 backdrop-blur">
+      <div
+        ref={barRef}
+        className="fixed inset-x-0 bottom-0 border-t border-white/10 bg-gray-900/90 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur"
+      >
         <div className="mx-auto w-full max-w-md space-y-2">
           <button
             type="button"

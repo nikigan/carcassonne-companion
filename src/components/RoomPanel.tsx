@@ -14,7 +14,7 @@ export function RoomPanel({ code, onClose, onLeave }: { code: string; onClose: (
 
   return (
     <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
-      <div className="w-full max-w-md rounded-t-3xl bg-gray-800 p-5 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md rounded-t-3xl bg-gray-800 px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold">{t.roomTitle}</h2>
           <button onClick={onClose} className="rounded-lg px-2 py-1 text-white/50 hover:bg-white/10" aria-label={t.close}>✕</button>
