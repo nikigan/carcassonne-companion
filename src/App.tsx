@@ -6,11 +6,13 @@ import { Scoreboard } from './components/Scoreboard'
 import { ExpansionPicker } from './components/ExpansionPicker'
 import { RoomPanel } from './components/RoomPanel'
 import { UpdatePrompt } from './components/UpdatePrompt'
+import { useMessageAlerts } from './useMessageAlerts'
 
 export default function App() {
   const { t, lang, setLang } = useI18n()
   const game = useGame()
   const { state, room } = game
+  const alerts = useMessageAlerts(state)
   const [menuOpen, setMenuOpen] = useState(false)
   const [expansionsOpen, setExpansionsOpen] = useState(false)
   const [roomPanelOpen, setRoomPanelOpen] = useState(false)
@@ -133,6 +135,10 @@ export default function App() {
                           setMenuOpen(false)
                         }}
                       />
+                      <MenuItem
+                        label={`${alerts.soundOn ? '🔔' : '🔕'} ${t.soundLabel}`}
+                        onClick={() => alerts.setSoundOn(!alerts.soundOn)}
+                      />
                       {state.expansions.tradersBuilders && (
                         <MenuItem
                           label={`${t.scoreTradeGoods} 🛢️`}
@@ -157,7 +163,10 @@ export default function App() {
                           <MenuItem
                             label={t.resetScores}
                             onClick={() => {
-                              if (confirm(t.confirmReset)) game.resetScores()
+                              if (confirm(t.confirmReset)) {
+                                game.resetScores()
+                                alerts.clear()
+                              }
                               setMenuOpen(false)
                             }}
                           />
@@ -165,7 +174,10 @@ export default function App() {
                             label={t.newGame}
                             danger
                             onClick={() => {
-                              if (confirm(t.confirmNewGame)) game.newGame()
+                              if (confirm(t.confirmNewGame)) {
+                                game.newGame()
+                                alerts.clear()
+                              }
                               setMenuOpen(false)
                             }}
                           />
@@ -187,6 +199,9 @@ export default function App() {
             onScore={game.addScore}
             onRecordTokens={game.recordTokens}
             onUndo={game.undoEntry}
+            messagePending={alerts.pending}
+            onClearMessages={alerts.clear}
+            onDismissMessage={alerts.dismiss}
           />
         ) : (
           <PlayerSetup
@@ -246,7 +261,29 @@ export default function App() {
         </footer>
       )}
 
+      <MessageToast show={alerts.toast !== null} text={t.messageAvailable} />
       <UpdatePrompt />
+    </div>
+  )
+}
+
+/**
+ * Small, generic attention toast for an earned message. Deliberately names no
+ * player — who actually draws the tile isn't known yet. Sits just above the
+ * update toast. Mounted at all times so screen readers announce content flips.
+ */
+function MessageToast({ show, text }: { show: boolean; text: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(5rem,calc(env(safe-area-inset-bottom)+5rem))]"
+    >
+      {show && (
+        <div className="pointer-events-auto rounded-xl border border-amber-400/30 bg-amber-500/20 px-4 py-3 text-sm font-semibold text-amber-50 shadow-2xl backdrop-blur">
+          {text}
+        </div>
+      )}
     </div>
   )
 }
