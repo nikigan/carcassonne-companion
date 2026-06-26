@@ -216,6 +216,7 @@ const en: Strings = {
     circus: 'Circus',
     acrobats: 'Acrobats',
     ringmaster: 'Ringmaster',
+    fairy: 'Fairy',
   },
   tiles: 'Tiles',
   pennants: 'Coat of arms',
@@ -390,6 +391,7 @@ const ru: Strings = {
     circus: 'Цирк',
     acrobats: 'Акробаты',
     ringmaster: 'Директор',
+    fairy: 'Фея',
   },
   tiles: 'Тайлы',
   pennants: 'Щиты',
@@ -586,6 +588,10 @@ function formatEn(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.acrobats} Acrobats ×${d.count}`
     case 'ringmaster':
       return `${FEATURE_EMOJI.ringmaster} Ringmaster (${d.tiles} ${pluralEn(d.tiles, 'tile', 'tiles')})`
+    case 'fairy':
+      return d.bonus === 1
+        ? `${FEATURE_EMOJI.fairy} Fairy +1 (start of turn)`
+        : `${FEATURE_EMOJI.fairy} Fairy +3 (feature)`
     case 'goodsBonus':
       return `${GOODS_EMOJI[d.good]} ${capitalize(d.good)} majority`
     case 'manual':
@@ -635,6 +641,10 @@ function formatRu(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.acrobats} Акробаты ×${d.count}`
     case 'ringmaster':
       return `${FEATURE_EMOJI.ringmaster} Директор (${d.tiles} ${pluralRu(d.tiles, ['тайл', 'тайла', 'тайлов'])})`
+    case 'fairy':
+      return d.bonus === 1
+        ? `${FEATURE_EMOJI.fairy} Фея +1 (начало хода)`
+        : `${FEATURE_EMOJI.fairy} Фея +3 (объект)`
     case 'goodsBonus': {
       const names: Record<typeof d.good, string> = {
         wine: 'вино',

@@ -72,6 +72,7 @@ export type ScoreDescriptor =
   | { kind: 'circus'; animal: CircusAnimal; meeples: number }
   | { kind: 'acrobats'; count: number }
   | { kind: 'ringmaster'; tiles: number }
+  | { kind: 'fairy'; bonus: 1 | 3 }
   | { kind: 'goodsBonus'; good: GoodType }
   | { kind: 'manual'; amount: number }
 

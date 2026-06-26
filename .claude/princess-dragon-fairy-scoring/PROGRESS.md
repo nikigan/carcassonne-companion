@@ -5,7 +5,7 @@ Plan: docs/superpowers/plans/2026-06-27-princess-dragon-fairy-scoring.md
 
 ## Status
 - [x] Task 1 — register expansion in picker
-- [ ] Task 2 — fairy data model + log label
+- [x] Task 2 — fairy data model + log label
 - [ ] Task 3 — fairy form + docs
 
 ## Notes
