@@ -304,7 +304,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={cycle}
-      className="rounded-lg bg-overlay/5 px-2 py-1 text-base leading-none transition hover:bg-overlay/10"
+      className="flex h-8 w-8 items-center justify-center rounded-lg bg-overlay/5 text-base leading-none transition hover:bg-overlay/10"
       aria-label={t.themeToggleAria(label)}
       title={label}
     >
