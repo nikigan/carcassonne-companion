@@ -17,8 +17,12 @@ Automatable checks — PASS:
 - sw.js: NavigationRoute index.html fallback WITH /api/ denylist; precache covers index.html, JS, CSS, all icons, favicon, manifest.
 - Preview server (http://localhost:4173) serves over HTTP: manifest (application/manifest+json), sw.js (text/javascript), all 4 icons (image/png), SPA deep-link /r/<code> -> index.html.
 
-Manual / device checks (NOT automatable here — Claude browser extension not connected):
-- Live SW registration/activation + install prompt (DevTools > Application).
-- Offline toggle -> solo play still works.
-- Update toast appears on a new build and only reloads on Refresh.
+Live in-browser checks (Chrome, http://localhost:4173) — PASS:
+- Service worker registers, reaches `activated`, scope `/`, and controls the page after one reload (controllerScriptURL = /sw.js).
+- Browser parsed the manifest; Workbox precache populated (app shell + all icons).
+- OFFLINE proof: with the preview server killed, reloading still rendered the full app (root content, header, 19–20 interactive controls) — solo play works offline.
+- OFFLINE deep link: navigating to /r/<code> with the server down served the cached SPA shell via navigateFallback.
+- Update flow: a new build put the new SW into `waiting`; the localized toast appeared («Доступно обновление. Обновить» / "A new version is available. Refresh") with NO auto-reload (registerType 'prompt'). Clicking Refresh activated the new SW, loaded the new bundle, and dismissed the toast.
+
+Remaining (real-device only, optional):
 - iOS Safari > Add to Home Screen shows the castle icon + standalone launch.
