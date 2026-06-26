@@ -1,4 +1,18 @@
+import type { ExpansionConfig } from './expansions'
+
 export type GoodType = 'wine' | 'grain' | 'cloth'
+
+/** Mage & Witch: the magic figure sitting on a road/city when it scores. */
+export type MagicFigure = 'none' | 'mage' | 'witch'
+
+/** Circus & Artists: the animal token revealed at the Big Top. */
+export type CircusAnimal =
+  | 'elephant'
+  | 'tiger'
+  | 'bear'
+  | 'seal'
+  | 'monkey'
+  | 'flea'
 
 /** Traders & Builders trade-goods tokens collected by a player. */
 export interface TradeGoods {
@@ -35,19 +49,29 @@ export interface Player {
  * language changes.
  */
 export type ScoreDescriptor =
-  | { kind: 'road'; tiles: number; completed: boolean; inn: boolean }
+  | {
+      kind: 'road'
+      tiles: number
+      completed: boolean
+      inn: boolean
+      magic: MagicFigure
+    }
   | {
       kind: 'city'
       tiles: number
       pennants: number
       completed: boolean
       cathedral: boolean
+      magic: MagicFigure
     }
   | { kind: 'cloister'; surrounding: number; completed: boolean }
   | { kind: 'field'; cities: number; pig: boolean; castles: number }
   | { kind: 'castle'; value: number }
   | { kind: 'gold'; ingots: number }
   | { kind: 'message'; points: number }
+  | { kind: 'circus'; animal: CircusAnimal; meeples: number }
+  | { kind: 'acrobats'; count: number }
+  | { kind: 'ringmaster'; tiles: number }
   | { kind: 'goodsBonus'; good: GoodType }
   | { kind: 'manual'; amount: number }
 
@@ -65,4 +89,6 @@ export interface GameState {
   log: ScoreEntry[]
   /** Whether the game has started (players locked in and scoring begun). */
   started: boolean
+  /** Which expansions are active — gates the scoring UI. */
+  expansions: ExpansionConfig
 }

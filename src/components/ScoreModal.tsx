@@ -1,18 +1,33 @@
 import { useState } from 'react'
-import type { Player, ScoreDescriptor, TokenDelta } from '../types'
+import type {
+  CircusAnimal,
+  MagicFigure,
+  Player,
+  ScoreDescriptor,
+  TokenDelta,
+} from '../types'
+import type { ExpansionConfig } from '../expansions'
 import { contrastText } from '../colors'
 import { formatDescriptor, useI18n } from '../i18n'
 import {
+  ANIMAL_EMOJI,
+  ANIMAL_VALUE,
   CATHEDRAL_EMOJI,
   FEATURE_EMOJI,
   GOODS_EMOJI,
   INN_EMOJI,
+  MAGE_EMOJI,
   PIG_EMOJI,
+  WITCH_EMOJI,
+  applyMagic,
+  scoreAcrobats,
   scoreCastle,
+  scoreCircus,
   scoreCity,
   scoreCloister,
   scoreField,
   scoreMessage,
+  scoreRingmaster,
   scoreRoad,
   type FeatureType,
 } from '../scoring'
@@ -30,6 +45,8 @@ interface Props {
   player: Player
   /** Recent feature scores the castle can borrow its value from. */
   recentFeatures: CastleEntry[]
+  /** Active expansions — gates which scoring inputs appear. */
+  expansions: ExpansionConfig
   onClose: () => void
   onScore: (amount: number, desc: ScoreDescriptor) => void
   onRecordTokens: (delta: TokenDelta) => void
@@ -38,7 +55,14 @@ interface Props {
 type Tab = 'preset' | 'goods' | 'manual'
 
 /** Modal for adding points to a player via Carcassonne presets or manual entry. */
-export function ScoreModal({ player, recentFeatures, onClose, onScore, onRecordTokens }: Props) {
+export function ScoreModal({
+  player,
+  recentFeatures,
+  expansions,
+  onClose,
+  onScore,
+  onRecordTokens,
+}: Props) {
   const { t } = useI18n()
   const [tab, setTab] = useState<Tab>('preset')
 
@@ -47,9 +71,12 @@ export function ScoreModal({ player, recentFeatures, onClose, onScore, onRecordT
     onClose()
   }
 
+  const showGoodsTab = expansions.tradersBuilders || expansions.goldMines
   const tabs: { key: Tab; label: string }[] = [
     { key: 'preset', label: t.featuresTab },
-    { key: 'goods', label: `${GOODS_EMOJI.wine} ${t.goodsTab}` },
+    ...(showGoodsTab
+      ? [{ key: 'goods' as const, label: `${GOODS_EMOJI.wine} ${t.goodsTab}` }]
+      : []),
     { key: 'manual', label: `${FEATURE_EMOJI.manual} ${t.manualTab}` },
   ]
 
@@ -82,7 +109,10 @@ export function ScoreModal({ player, recentFeatures, onClose, onScore, onRecordT
           </button>
         </div>
 
-        <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-black/30 p-1 text-sm font-medium">
+        <div
+          className="mb-4 grid gap-1 rounded-xl bg-black/30 p-1 text-sm font-medium"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        >
           {tabs.map((tb) => (
             <button
               key={tb.key}
@@ -96,9 +126,17 @@ export function ScoreModal({ player, recentFeatures, onClose, onScore, onRecordT
           ))}
         </div>
 
-        {tab === 'preset' && <PresetForms onApply={apply} recentFeatures={recentFeatures} />}
-        {tab === 'goods' && (
+        {tab === 'preset' && (
+          <PresetForms
+            onApply={apply}
+            recentFeatures={recentFeatures}
+            expansions={expansions}
+          />
+        )}
+        {tab === 'goods' && showGoodsTab && (
           <GoodsForm
+            tradersBuilders={expansions.tradersBuilders}
+            goldMines={expansions.goldMines}
             onRecord={(delta) => {
               onRecordTokens(delta)
               onClose()
@@ -116,9 +154,11 @@ type ApplyFn = (amount: number, desc: ScoreDescriptor) => void
 function PresetForms({
   onApply,
   recentFeatures,
+  expansions,
 }: {
   onApply: ApplyFn
   recentFeatures: CastleEntry[]
+  expansions: ExpansionConfig
 }) {
   const { t } = useI18n()
   const [feature, setFeature] = useState<FeatureType>('road')
@@ -128,9 +168,15 @@ function PresetForms({
     'city',
     'cloister',
     'field',
-    'castle',
-    'message',
+    ...(expansions.bridgesCastlesBazaars ? (['castle'] as const) : []),
+    ...(expansions.messages ? (['message'] as const) : []),
+    ...(expansions.circus
+      ? (['circus', 'acrobats', 'ringmaster'] as const)
+      : []),
   ]
+
+  // The selected feature may have been hidden by an expansion toggle; fall back.
+  const active = features.includes(feature) ? feature : 'road'
 
   return (
     <div>
@@ -140,7 +186,7 @@ function PresetForms({
             key={key}
             onClick={() => setFeature(key)}
             className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-medium transition ${
-              feature === key
+              active === key
                 ? 'bg-amber-500 text-gray-900'
                 : 'bg-white/5 text-white/70 hover:bg-white/10'
             }`}
@@ -151,14 +197,35 @@ function PresetForms({
         ))}
       </div>
 
-      {feature === 'road' && <RoadForm onApply={onApply} />}
-      {feature === 'city' && <CityForm onApply={onApply} />}
-      {feature === 'cloister' && <CloisterForm onApply={onApply} />}
-      {feature === 'field' && <FieldForm onApply={onApply} />}
-      {feature === 'castle' && (
+      {active === 'road' && (
+        <RoadForm
+          onApply={onApply}
+          innsCathedrals={expansions.innsCathedrals}
+          mageWitch={expansions.mageWitch}
+        />
+      )}
+      {active === 'city' && (
+        <CityForm
+          onApply={onApply}
+          innsCathedrals={expansions.innsCathedrals}
+          mageWitch={expansions.mageWitch}
+        />
+      )}
+      {active === 'cloister' && <CloisterForm onApply={onApply} />}
+      {active === 'field' && (
+        <FieldForm
+          onApply={onApply}
+          tradersBuilders={expansions.tradersBuilders}
+          bridgesCastlesBazaars={expansions.bridgesCastlesBazaars}
+        />
+      )}
+      {active === 'castle' && (
         <CastleForm onApply={onApply} recentFeatures={recentFeatures} />
       )}
-      {feature === 'message' && <MessageForm onApply={onApply} />}
+      {active === 'message' && <MessageForm onApply={onApply} />}
+      {active === 'circus' && <CircusForm onApply={onApply} />}
+      {active === 'acrobats' && <AcrobatsForm onApply={onApply} />}
+      {active === 'ringmaster' && <RingmasterForm onApply={onApply} />}
     </div>
   )
 }
@@ -258,48 +325,113 @@ function ApplyBar({
   )
 }
 
-function RoadForm({ onApply }: { onApply: ApplyFn }) {
+/** 3-way None / Mage / Witch selector for road & city (Mage & Witch). */
+function MagicControl({
+  value,
+  onChange,
+}: {
+  value: MagicFigure
+  onChange: (m: MagicFigure) => void
+}) {
+  const { t } = useI18n()
+  const opts: { key: MagicFigure; label: string }[] = [
+    { key: 'none', label: t.magicNone },
+    { key: 'mage', label: `${MAGE_EMOJI} ${t.mage}` },
+    { key: 'witch', label: `${WITCH_EMOJI} ${t.witch}` },
+  ]
+  return (
+    <div className="py-1.5">
+      <span className="mb-1 block text-sm text-white/80">{t.magicLabel}</span>
+      <div className="grid grid-cols-3 gap-1 rounded-lg bg-black/30 p-0.5 text-xs font-medium">
+        {opts.map((o) => (
+          <button
+            key={o.key}
+            onClick={() => onChange(o.key)}
+            className={`rounded-md px-2 py-1.5 transition ${
+              value === o.key ? 'bg-white/15' : 'text-white/50'
+            }`}
+            aria-pressed={value === o.key}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RoadForm({
+  onApply,
+  innsCathedrals,
+  mageWitch,
+}: {
+  onApply: ApplyFn
+  innsCathedrals: boolean
+  mageWitch: boolean
+}) {
   const { t } = useI18n()
   const [tiles, setTiles] = useState(2)
   const [inn, setInn] = useState(false)
   const [completed, setCompleted] = useState(true)
+  const [magic, setMagic] = useState<MagicFigure>('none')
+  const amount = applyMagic(scoreRoad(tiles, completed, inn), tiles, magic)
   return (
     <div>
       <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
-      <Toggle label={`${INN_EMOJI} ${t.inn}`} checked={inn} onChange={setInn} />
-      {inn && (
+      {innsCathedrals && (
+        <Toggle label={`${INN_EMOJI} ${t.inn}`} checked={inn} onChange={setInn} />
+      )}
+      {innsCathedrals && inn && (
         <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
       )}
+      {mageWitch && <MagicControl value={magic} onChange={setMagic} />}
       <p className="mt-1 text-xs text-white/40">{t.roadHint}</p>
       <ApplyBar
-        amount={scoreRoad(tiles, completed, inn)}
-        desc={{ kind: 'road', tiles, completed, inn }}
+        amount={amount}
+        desc={{ kind: 'road', tiles, completed, inn, magic }}
         onApply={onApply}
       />
     </div>
   )
 }
 
-function CityForm({ onApply }: { onApply: ApplyFn }) {
+function CityForm({
+  onApply,
+  innsCathedrals,
+  mageWitch,
+}: {
+  onApply: ApplyFn
+  innsCathedrals: boolean
+  mageWitch: boolean
+}) {
   const { t } = useI18n()
   const [tiles, setTiles] = useState(2)
   const [pennants, setPennants] = useState(0)
   const [completed, setCompleted] = useState(true)
   const [cathedral, setCathedral] = useState(false)
+  const [magic, setMagic] = useState<MagicFigure>('none')
+  const amount = applyMagic(
+    scoreCity(tiles, pennants, completed, cathedral),
+    tiles,
+    magic,
+  )
   return (
     <div>
       <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
       <NumberField label={t.pennants} value={pennants} onChange={setPennants} />
       <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
-      <Toggle
-        label={`${CATHEDRAL_EMOJI} ${t.cathedral}`}
-        checked={cathedral}
-        onChange={setCathedral}
-      />
+      {innsCathedrals && (
+        <Toggle
+          label={`${CATHEDRAL_EMOJI} ${t.cathedral}`}
+          checked={cathedral}
+          onChange={setCathedral}
+        />
+      )}
+      {mageWitch && <MagicControl value={magic} onChange={setMagic} />}
       <p className="mt-1 text-xs text-white/40">{t.cityHint}</p>
       <ApplyBar
-        amount={scoreCity(tiles, pennants, completed, cathedral)}
-        desc={{ kind: 'city', tiles, pennants, completed, cathedral }}
+        amount={amount}
+        desc={{ kind: 'city', tiles, pennants, completed, cathedral, magic }}
         onApply={onApply}
       />
     </div>
@@ -327,7 +459,15 @@ function CloisterForm({ onApply }: { onApply: ApplyFn }) {
   )
 }
 
-function FieldForm({ onApply }: { onApply: ApplyFn }) {
+function FieldForm({
+  onApply,
+  tradersBuilders,
+  bridgesCastlesBazaars,
+}: {
+  onApply: ApplyFn
+  tradersBuilders: boolean
+  bridgesCastlesBazaars: boolean
+}) {
   const { t } = useI18n()
   const [cities, setCities] = useState(1)
   const [pig, setPig] = useState(false)
@@ -335,13 +475,17 @@ function FieldForm({ onApply }: { onApply: ApplyFn }) {
   return (
     <div>
       <NumberField label={t.completedCities} value={cities} onChange={setCities} />
-      <NumberField
-        label={`${FEATURE_EMOJI.castle} ${t.featureNames.castle}`}
-        value={castles}
-        onChange={setCastles}
-        min={0}
-      />
-      <Toggle label={`${PIG_EMOJI} ${t.pig}`} checked={pig} onChange={setPig} />
+      {bridgesCastlesBazaars && (
+        <NumberField
+          label={`${FEATURE_EMOJI.castle} ${t.featureNames.castle}`}
+          value={castles}
+          onChange={setCastles}
+          min={0}
+        />
+      )}
+      {tradersBuilders && (
+        <Toggle label={`${PIG_EMOJI} ${t.pig}`} checked={pig} onChange={setPig} />
+      )}
       <p className="mt-1 text-xs text-white/40">{t.fieldHint}</p>
       <ApplyBar
         amount={scoreField(cities, pig, castles)}
@@ -416,7 +560,94 @@ function MessageForm({ onApply }: { onApply: ApplyFn }) {
   )
 }
 
-function GoodsForm({ onRecord }: { onRecord: (delta: TokenDelta) => void }) {
+function CircusForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [animal, setAnimal] = useState<CircusAnimal>('seal')
+  const [meeples, setMeeples] = useState(1)
+  const animals: CircusAnimal[] = [
+    'elephant',
+    'tiger',
+    'bear',
+    'seal',
+    'monkey',
+    'flea',
+  ]
+  return (
+    <div>
+      <div className="mb-3 grid grid-cols-3 gap-1.5">
+        {animals.map((a) => (
+          <button
+            key={a}
+            onClick={() => setAnimal(a)}
+            aria-label={t.animalNames[a]}
+            className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-bold transition ${
+              animal === a
+                ? 'bg-amber-500 text-gray-900'
+                : 'bg-white/5 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            <span className="text-xl leading-none">{ANIMAL_EMOJI[a]}</span>
+            {ANIMAL_VALUE[a]}
+          </button>
+        ))}
+      </div>
+      <NumberField label={t.meeples} value={meeples} onChange={setMeeples} min={1} />
+      <p className="mt-1 text-xs text-white/40">{t.circusHint}</p>
+      <ApplyBar
+        amount={scoreCircus(animal, meeples)}
+        desc={{ kind: 'circus', animal, meeples }}
+        onApply={onApply}
+      />
+    </div>
+  )
+}
+
+function AcrobatsForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [count, setCount] = useState(1)
+  return (
+    <div>
+      <NumberField label={t.acrobatsCount} value={count} onChange={setCount} min={1} />
+      <p className="mt-1 text-xs text-white/40">{t.acrobatsHint}</p>
+      <ApplyBar
+        amount={scoreAcrobats(count)}
+        desc={{ kind: 'acrobats', count }}
+        onApply={onApply}
+      />
+    </div>
+  )
+}
+
+function RingmasterForm({ onApply }: { onApply: ApplyFn }) {
+  const { t } = useI18n()
+  const [tiles, setTiles] = useState(1)
+  return (
+    <div>
+      <NumberField
+        label={t.ringmasterTiles}
+        value={tiles}
+        onChange={setTiles}
+        min={0}
+      />
+      <p className="mt-1 text-xs text-white/40">{t.ringmasterHint}</p>
+      <ApplyBar
+        amount={scoreRingmaster(tiles)}
+        desc={{ kind: 'ringmaster', tiles }}
+        onApply={onApply}
+      />
+    </div>
+  )
+}
+
+function GoodsForm({
+  onRecord,
+  tradersBuilders,
+  goldMines,
+}: {
+  onRecord: (delta: TokenDelta) => void
+  tradersBuilders: boolean
+  goldMines: boolean
+}) {
   const { t } = useI18n()
   const [wine, setWine] = useState(0)
   const [grain, setGrain] = useState(0)
@@ -426,11 +657,19 @@ function GoodsForm({ onRecord }: { onRecord: (delta: TokenDelta) => void }) {
 
   return (
     <div>
-      <NumberField label={`${GOODS_EMOJI.wine} ${t.goodNames.wine}`} value={wine} onChange={setWine} />
-      <NumberField label={`${GOODS_EMOJI.grain} ${t.goodNames.grain}`} value={grain} onChange={setGrain} />
-      <NumberField label={`${GOODS_EMOJI.cloth} ${t.goodNames.cloth}`} value={cloth} onChange={setCloth} />
-      <div className="my-2 border-t border-white/10" />
-      <NumberField label={`${FEATURE_EMOJI.gold} ${t.goldIngots}`} value={gold} onChange={setGold} />
+      {tradersBuilders && (
+        <>
+          <NumberField label={`${GOODS_EMOJI.wine} ${t.goodNames.wine}`} value={wine} onChange={setWine} />
+          <NumberField label={`${GOODS_EMOJI.grain} ${t.goodNames.grain}`} value={grain} onChange={setGrain} />
+          <NumberField label={`${GOODS_EMOJI.cloth} ${t.goodNames.cloth}`} value={cloth} onChange={setCloth} />
+        </>
+      )}
+      {tradersBuilders && goldMines && (
+        <div className="my-2 border-t border-white/10" />
+      )}
+      {goldMines && (
+        <NumberField label={`${FEATURE_EMOJI.gold} ${t.goldIngots}`} value={gold} onChange={setGold} />
+      )}
       <p className="mt-1 text-xs text-white/40">{t.goodsTabHint}</p>
       <button
         disabled={total === 0}

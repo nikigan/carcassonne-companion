@@ -7,15 +7,24 @@ import {
   type ReactNode,
 } from 'react'
 import type { ColorKey } from './colors'
+import type { ExpansionId } from './expansions'
 import {
+  ANIMAL_EMOJI,
   CATHEDRAL_EMOJI,
   FEATURE_EMOJI,
   GOODS_EMOJI,
   INN_EMOJI,
+  MAGE_EMOJI,
   PIG_EMOJI,
+  WITCH_EMOJI,
   type FeatureType,
 } from './scoring'
-import type { GoodType, ScoreDescriptor } from './types'
+import type {
+  CircusAnimal,
+  GoodType,
+  MagicFigure,
+  ScoreDescriptor,
+} from './types'
 
 export type Lang = 'en' | 'ru'
 
@@ -109,6 +118,28 @@ export interface Strings {
   goodsMajority: (good: string) => string
   goodsLabel: string
 
+  // Mage & Witch
+  magicLabel: string
+  magicNone: string
+  mage: string
+  witch: string
+
+  // Circus & Artists
+  circusAnimal: string
+  meeples: string
+  acrobatsCount: string
+  ringmasterTiles: string
+  circusHint: string
+  acrobatsHint: string
+  ringmasterHint: string
+  animalNames: Record<CircusAnimal, string>
+
+  // Expansion configuration
+  expansionsTitle: string
+  expansionsHint: string
+  expansionNames: Record<ExpansionId, string>
+  expansionDescriptions: Record<ExpansionId, string>
+
   scoreBtn: string
   subtractAria: (name: string) => string
   addPointAria: (name: string) => string
@@ -157,6 +188,9 @@ const en: Strings = {
     castle: 'Castle',
     gold: 'Gold',
     message: 'Message',
+    circus: 'Circus',
+    acrobats: 'Acrobats',
+    ringmaster: 'Ringmaster',
   },
   tiles: 'Tiles',
   pennants: 'Coat of arms',
@@ -199,6 +233,49 @@ const en: Strings = {
   scoreGold: 'Score gold',
   goodsMajority: (good) => `${good} majority`,
   goodsLabel: 'Goods',
+
+  magicLabel: 'Magic figure',
+  magicNone: 'None',
+  mage: 'Mage',
+  witch: 'Witch',
+
+  circusAnimal: 'Animal',
+  meeples: 'Your meeples nearby',
+  acrobatsCount: 'Acrobats',
+  ringmasterTiles: 'Adjacent circus / acrobat tiles',
+  circusHint: 'Each of your meeples by the Big Top scores the animal’s value.',
+  acrobatsHint: 'Each acrobat scores 5 points for its owner.',
+  ringmasterHint:
+    'Scored on top of the feature: +2 per circus or acrobat tile on or next to the Ringmaster’s tile.',
+  animalNames: {
+    elephant: 'Elephant',
+    tiger: 'Tiger',
+    bear: 'Bear',
+    seal: 'Seal',
+    monkey: 'Monkey',
+    flea: 'Flea',
+  },
+
+  expansionsTitle: 'Expansions',
+  expansionsHint: 'Pick what you’re playing — the rest stays out of the way.',
+  expansionNames: {
+    innsCathedrals: 'Inns & Cathedrals',
+    tradersBuilders: 'Traders & Builders',
+    bridgesCastlesBazaars: 'Bridges, Castles & Bazaars',
+    goldMines: 'Gold Mines',
+    messages: 'The Messages',
+    mageWitch: 'The Mage & Witch',
+    circus: 'Circus & Artists',
+  },
+  expansionDescriptions: {
+    innsCathedrals: 'Inns on roads, cathedrals in cities.',
+    tradersBuilders: 'Trade goods majorities and the pig.',
+    bridgesCastlesBazaars: 'Castles.',
+    goldMines: 'Gold ingots, scored at game end.',
+    messages: 'Message tiles (manual points).',
+    mageWitch: 'Mage boosts and witch halves a road or city.',
+    circus: 'Big Top animals, acrobats and the ringmaster.',
+  },
 
   scoreBtn: 'Score',
   subtractAria: (name) => `Subtract a point from ${name}`,
@@ -259,6 +336,9 @@ const ru: Strings = {
     castle: 'Замок',
     gold: 'Золото',
     message: 'Послание',
+    circus: 'Цирк',
+    acrobats: 'Акробаты',
+    ringmaster: 'Директор',
   },
   tiles: 'Тайлы',
   pennants: 'Щиты',
@@ -305,6 +385,49 @@ const ru: Strings = {
   goodsMajority: (good) => `Большинство: ${good}`,
   goodsLabel: 'Товары',
 
+  magicLabel: 'Магия',
+  magicNone: 'Нет',
+  mage: 'Маг',
+  witch: 'Ведьма',
+
+  circusAnimal: 'Животное',
+  meeples: 'Ваши миплы рядом',
+  acrobatsCount: 'Акробаты',
+  ringmasterTiles: 'Соседние тайлы цирка / акробатов',
+  circusHint: 'Каждый ваш мипл у шатра приносит очки, равные значению животного.',
+  acrobatsHint: 'Каждый акробат приносит владельцу 5 очков.',
+  ringmasterHint:
+    'Начисляется сверх объекта: +2 за каждый тайл цирка или акробатов на тайле директора или рядом с ним.',
+  animalNames: {
+    elephant: 'Слон',
+    tiger: 'Тигр',
+    bear: 'Медведь',
+    seal: 'Тюлень',
+    monkey: 'Обезьяна',
+    flea: 'Блоха',
+  },
+
+  expansionsTitle: 'Дополнения',
+  expansionsHint: 'Выберите, во что играете — лишнее не будет мешать.',
+  expansionNames: {
+    innsCathedrals: 'Трактиры и соборы',
+    tradersBuilders: 'Купцы и строители',
+    bridgesCastlesBazaars: 'Мосты, замки и базары',
+    goldMines: 'Золотые жилы',
+    messages: 'Послания',
+    mageWitch: 'Маг и ведьма',
+    circus: 'Цирк',
+  },
+  expansionDescriptions: {
+    innsCathedrals: 'Трактиры на дорогах, соборы в городах.',
+    tradersBuilders: 'Большинство товаров и свинья.',
+    bridgesCastlesBazaars: 'Замки.',
+    goldMines: 'Слитки золота, подсчёт в конце игры.',
+    messages: 'Тайлы посланий (очки вручную).',
+    mageWitch: 'Маг усиливает, ведьма уменьшает дорогу или город.',
+    circus: 'Животные шатра, акробаты и директор цирка.',
+  },
+
   scoreBtn: 'Счёт',
   subtractAria: (name) => `Отнять очко у ${name}`,
   addPointAria: (name) => `Добавить очко: ${name}`,
@@ -341,12 +464,19 @@ export function formatDescriptor(desc: ScoreDescriptor, lang: Lang): string {
   return formatEn(desc)
 }
 
+/** Trailing mage/witch emoji for a road/city label (Mage & Witch). */
+function magicSuffix(magic: MagicFigure): string {
+  if (magic === 'mage') return ` ${MAGE_EMOJI}`
+  if (magic === 'witch') return ` ${WITCH_EMOJI}`
+  return ''
+}
+
 function formatEn(d: ScoreDescriptor): string {
   switch (d.kind) {
     case 'road': {
       const t = d.tiles
       const inn = d.inn ? ` ${INN_EMOJI}` : ''
-      return `${FEATURE_EMOJI.road} Road${inn} (${t} ${pluralEn(t, 'tile', 'tiles')})`
+      return `${FEATURE_EMOJI.road} Road${inn}${magicSuffix(d.magic)} (${t} ${pluralEn(t, 'tile', 'tiles')})`
     }
     case 'city': {
       const t = d.tiles
@@ -356,7 +486,7 @@ function formatEn(d: ScoreDescriptor): string {
           : ''
       const cath = d.cathedral ? ` ${CATHEDRAL_EMOJI}` : ''
       const state = d.completed ? 'completed' : 'incomplete'
-      return `${FEATURE_EMOJI.city} City${cath} ${state} (${t} ${pluralEn(t, 'tile', 'tiles')}${penn})`
+      return `${FEATURE_EMOJI.city} City${cath}${magicSuffix(d.magic)} ${state} (${t} ${pluralEn(t, 'tile', 'tiles')}${penn})`
     }
     case 'cloister':
       return d.completed
@@ -373,6 +503,12 @@ function formatEn(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.gold} Gold (${d.ingots} ${pluralEn(d.ingots, 'ingot', 'ingots')})`
     case 'message':
       return `${FEATURE_EMOJI.message} Message`
+    case 'circus':
+      return `${FEATURE_EMOJI.circus} Circus (${ANIMAL_EMOJI[d.animal]} ×${d.meeples})`
+    case 'acrobats':
+      return `${FEATURE_EMOJI.acrobats} Acrobats ×${d.count}`
+    case 'ringmaster':
+      return `${FEATURE_EMOJI.ringmaster} Ringmaster (${d.tiles} ${pluralEn(d.tiles, 'tile', 'tiles')})`
     case 'goodsBonus':
       return `${GOODS_EMOJI[d.good]} ${capitalize(d.good)} majority`
     case 'manual':
@@ -389,7 +525,7 @@ function formatRu(d: ScoreDescriptor): string {
     case 'road': {
       const t = d.tiles
       const inn = d.inn ? ` ${INN_EMOJI}` : ''
-      return `${FEATURE_EMOJI.road} Дорога${inn} (${t} ${pluralRu(t, ['тайл', 'тайла', 'тайлов'])})`
+      return `${FEATURE_EMOJI.road} Дорога${inn}${magicSuffix(d.magic)} (${t} ${pluralRu(t, ['тайл', 'тайла', 'тайлов'])})`
     }
     case 'city': {
       const t = d.tiles
@@ -399,7 +535,7 @@ function formatRu(d: ScoreDescriptor): string {
           : ''
       const cath = d.cathedral ? ` ${CATHEDRAL_EMOJI}` : ''
       const state = d.completed ? 'завершён' : 'незавершён'
-      return `${FEATURE_EMOJI.city} Город${cath} ${state} (${t} ${pluralRu(t, ['тайл', 'тайла', 'тайлов'])}${penn})`
+      return `${FEATURE_EMOJI.city} Город${cath}${magicSuffix(d.magic)} ${state} (${t} ${pluralRu(t, ['тайл', 'тайла', 'тайлов'])}${penn})`
     }
     case 'cloister':
       return d.completed
@@ -416,6 +552,12 @@ function formatRu(d: ScoreDescriptor): string {
       return `${FEATURE_EMOJI.gold} Золото (${d.ingots} ${pluralRu(d.ingots, ['слиток', 'слитка', 'слитков'])})`
     case 'message':
       return `${FEATURE_EMOJI.message} Послание`
+    case 'circus':
+      return `${FEATURE_EMOJI.circus} Цирк (${ANIMAL_EMOJI[d.animal]} ×${d.meeples})`
+    case 'acrobats':
+      return `${FEATURE_EMOJI.acrobats} Акробаты ×${d.count}`
+    case 'ringmaster':
+      return `${FEATURE_EMOJI.ringmaster} Директор (${d.tiles} ${pluralRu(d.tiles, ['тайл', 'тайла', 'тайлов'])})`
     case 'goodsBonus': {
       const names: Record<typeof d.good, string> = {
         wine: 'вино',

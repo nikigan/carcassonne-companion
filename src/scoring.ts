@@ -1,10 +1,11 @@
-import type { GoodType } from './types'
+import type { CircusAnimal, GoodType, MagicFigure } from './types'
 
 /**
  * Carcassonne scoring math (base game + Inns & Cathedrals, Traders & Builders,
- * and the Castle from Bridges, Castles & Bazaars). These compute point values
- * only; human-readable labels are produced by the i18n layer from a
- * ScoreDescriptor so they can be localized.
+ * the Castle from Bridges, Castles & Bazaars, Gold Mines, The Messages, the
+ * Mage & Witch, and Circus & Artists). These compute point values only;
+ * human-readable labels are produced by the i18n layer from a ScoreDescriptor
+ * so they can be localized.
  */
 
 export type FeatureType =
@@ -15,6 +16,9 @@ export type FeatureType =
   | 'castle'
   | 'gold'
   | 'message'
+  | 'circus'
+  | 'acrobats'
+  | 'ringmaster'
 
 /** Emoji shown for each game feature (and for manual adjustments). */
 export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
@@ -25,6 +29,9 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
   castle: '🏯',
   gold: '🟨',
   message: '📜',
+  circus: '🎪',
+  acrobats: '🤸',
+  ringmaster: '🎩',
   manual: '✏️',
 }
 
@@ -32,6 +39,8 @@ export const FEATURE_EMOJI: Record<FeatureType | 'manual', string> = {
 export const INN_EMOJI = '🍺'
 export const CATHEDRAL_EMOJI = '✝️'
 export const PIG_EMOJI = '🐷'
+export const MAGE_EMOJI = '🧙'
+export const WITCH_EMOJI = '🧹'
 
 /** Trade-goods tokens (Traders & Builders). */
 export const GOODS_EMOJI: Record<GoodType, string> = {
@@ -113,4 +122,64 @@ export function scoreGold(ingots: number): number {
 /** The Messages: points received from a message tile (entered directly). */
 export function scoreMessage(points: number): number {
   return clamp(points)
+}
+
+/* ------------------------------------------------------------------ *
+ * The Mage & The Witch
+ * ------------------------------------------------------------------ */
+
+/**
+ * Apply a magic figure to a road/city's base score. The mage adds 1 point per
+ * tile in the feature (pennants excluded); the witch halves the feature's final
+ * points, rounded up in the player's favor. Roads and cities only — the figures
+ * can never sit on a monastery or field, and never both on one feature.
+ */
+export function applyMagic(base: number, tiles: number, magic: MagicFigure): number {
+  if (magic === 'mage') return clamp(base) + clamp(tiles)
+  if (magic === 'witch') return Math.ceil(clamp(base) / 2)
+  return clamp(base)
+}
+
+/* ------------------------------------------------------------------ *
+ * Circus & Artists
+ * ------------------------------------------------------------------ */
+
+/** Animal-token values shown at the Big Top (no animal is worth 2). */
+export const ANIMAL_VALUE: Record<CircusAnimal, number> = {
+  elephant: 7,
+  tiger: 6,
+  bear: 5,
+  seal: 4,
+  monkey: 3,
+  flea: 1,
+}
+
+export const ANIMAL_EMOJI: Record<CircusAnimal, string> = {
+  elephant: '🐘',
+  tiger: '🐅',
+  bear: '🐻',
+  seal: '🦭',
+  monkey: '🐒',
+  flea: '🦟',
+}
+
+/** Points each acrobat scores its owner. */
+export const ACROBAT_POINTS = 5
+
+/** Ringmaster bonus per adjacent circus/acrobat tile. */
+export const RINGMASTER_PER_TILE = 2
+
+/** Circus / Big Top: each nearby meeple scores the revealed animal's value. */
+export function scoreCircus(animal: CircusAnimal, meeples: number): number {
+  return ANIMAL_VALUE[animal] * clamp(meeples)
+}
+
+/** Acrobat pyramid: each acrobat scores its owner 5 points. */
+export function scoreAcrobats(count: number): number {
+  return clamp(count) * ACROBAT_POINTS
+}
+
+/** Ringmaster: +2 per circus/acrobat tile on or adjacent to its tile. */
+export function scoreRingmaster(tiles: number): number {
+  return clamp(tiles) * RINGMASTER_PER_TILE
 }

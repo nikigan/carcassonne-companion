@@ -8,8 +8,9 @@ import type {
   TokenDelta,
 } from './types'
 import { emptyGoods } from './types'
+import type { ExpansionId } from './expansions'
 import { GOODS_MAJORITY_BONUS, scoreGold } from './scoring'
-import { clearGame, emptyGame, loadGame, saveGame, uid } from './storage'
+import { emptyGame, loadGame, saveGame, uid } from './storage'
 
 const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
 
@@ -73,6 +74,14 @@ export function useGame() {
   /** Return to the player setup screen without losing scores. */
   const editPlayers = useCallback(() => {
     setState((s) => ({ ...s, started: false }))
+  }, [])
+
+  /** Toggle a single expansion on/off for the current game. */
+  const setExpansion = useCallback((id: ExpansionId, on: boolean) => {
+    setState((s) => ({
+      ...s,
+      expansions: { ...s.expansions, [id]: on },
+    }))
   }, [])
 
   const addScore = useCallback(
@@ -216,10 +225,13 @@ export function useGame() {
     }))
   }, [])
 
-  /** Wipe everything and return to player setup. */
+  /**
+   * Wipe players and scores and return to player setup, but carry the current
+   * expansion selection forward (the user usually plays the same set again).
+   * The persistence effect rewrites storage with this fresh state.
+   */
   const newGame = useCallback(() => {
-    clearGame()
-    setState({ ...emptyGame })
+    setState((s) => ({ ...emptyGame, expansions: s.expansions }))
   }, [])
 
   return {
@@ -229,6 +241,7 @@ export function useGame() {
     removePlayer,
     startGame,
     editPlayers,
+    setExpansion,
     addScore,
     recordTokens,
     scoreTradeGoods,

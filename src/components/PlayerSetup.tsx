@@ -1,19 +1,31 @@
 import { useState } from 'react'
 import type { Player } from '../types'
+import type { ExpansionConfig, ExpansionId } from '../expansions'
 import { contrastText, nextAvailableColor } from '../colors'
 import { useI18n } from '../i18n'
 import { ColorPicker } from './ColorPicker'
+import { ExpansionPicker } from './ExpansionPicker'
 
 interface Props {
   players: Player[]
+  expansions: ExpansionConfig
   onAdd: (name: string, color: string) => void
   onUpdate: (id: string, patch: Partial<Pick<Player, 'name' | 'color'>>) => void
   onRemove: (id: string) => void
+  onToggleExpansion: (id: ExpansionId, on: boolean) => void
   onStart: () => void
 }
 
 /** Pre-game screen: add/edit/remove players and their colors, then start. */
-export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Props) {
+export function PlayerSetup({
+  players,
+  expansions,
+  onAdd,
+  onUpdate,
+  onRemove,
+  onToggleExpansion,
+  onStart,
+}: Props) {
   const { t } = useI18n()
   const usedHexes = players.map((p) => p.color)
   const [name, setName] = useState('')
@@ -96,6 +108,14 @@ export function PlayerSetup({ players, onAdd, onUpdate, onRemove, onStart }: Pro
           </button>
         </div>
         <ColorPicker value={color} onChange={setColor} usedHexes={usedHexes} />
+      </div>
+
+      <div className="mt-6">
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-white/40">
+          {t.expansionsTitle}
+        </h3>
+        <p className="mb-3 text-xs text-white/50">{t.expansionsHint}</p>
+        <ExpansionPicker config={expansions} onToggle={onToggleExpansion} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-white/10 bg-gray-900/90 p-4 backdrop-blur">

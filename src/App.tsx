@@ -3,12 +3,14 @@ import { useGame } from './useGame'
 import { LANGUAGES, useI18n } from './i18n'
 import { PlayerSetup } from './components/PlayerSetup'
 import { Scoreboard } from './components/Scoreboard'
+import { ExpansionPicker } from './components/ExpansionPicker'
 
 export default function App() {
   const { t, lang, setLang } = useI18n()
   const game = useGame()
   const { state } = game
   const [menuOpen, setMenuOpen] = useState(false)
+  const [expansionsOpen, setExpansionsOpen] = useState(false)
 
   const leader =
     state.started && state.players.length
@@ -72,19 +74,30 @@ export default function App() {
                         }}
                       />
                       <MenuItem
-                        label={`${t.scoreTradeGoods} 🛢️`}
+                        label={`${t.expansionsTitle} 🧩`}
                         onClick={() => {
-                          game.scoreTradeGoods()
+                          setExpansionsOpen(true)
                           setMenuOpen(false)
                         }}
                       />
-                      <MenuItem
-                        label={`${t.scoreGold} 🟨`}
-                        onClick={() => {
-                          game.scoreGoldIngots()
-                          setMenuOpen(false)
-                        }}
-                      />
+                      {state.expansions.tradersBuilders && (
+                        <MenuItem
+                          label={`${t.scoreTradeGoods} 🛢️`}
+                          onClick={() => {
+                            game.scoreTradeGoods()
+                            setMenuOpen(false)
+                          }}
+                        />
+                      )}
+                      {state.expansions.goldMines && (
+                        <MenuItem
+                          label={`${t.scoreGold} 🟨`}
+                          onClick={() => {
+                            game.scoreGoldIngots()
+                            setMenuOpen(false)
+                          }}
+                        />
+                      )}
                       <MenuItem
                         label={t.resetScores}
                         onClick={() => {
@@ -120,13 +133,43 @@ export default function App() {
         ) : (
           <PlayerSetup
             players={state.players}
+            expansions={state.expansions}
             onAdd={game.addPlayer}
             onUpdate={game.updatePlayer}
             onRemove={game.removePlayer}
+            onToggleExpansion={game.setExpansion}
             onStart={game.startGame}
           />
         )}
       </main>
+
+      {expansionsOpen && (
+        <div
+          className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 sm:items-center"
+          onClick={() => setExpansionsOpen(false)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 p-5 shadow-2xl sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-lg font-bold">{t.expansionsTitle}</h2>
+              <button
+                onClick={() => setExpansionsOpen(false)}
+                className="rounded-lg px-2 py-1 text-white/50 hover:bg-white/10"
+                aria-label={t.close}
+              >
+                ✕
+              </button>
+            </div>
+            <p className="mb-3 text-xs text-white/50">{t.expansionsHint}</p>
+            <ExpansionPicker
+              config={state.expansions}
+              onToggle={game.setExpansion}
+            />
+          </div>
+        </div>
+      )}
 
       {state.started && leader && state.log.length > 0 && (
         <footer className="pb-8 text-center text-xs text-white/30">

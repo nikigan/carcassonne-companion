@@ -227,6 +227,7 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
         <ScoreModal
           player={active}
           recentFeatures={recentFeatures}
+          expansions={state.expansions}
           onClose={() => setActiveId(null)}
           onScore={(amount, desc) => onScore(active.id, amount, desc)}
           onRecordTokens={(delta) => onRecordTokens(active.id, delta)}
