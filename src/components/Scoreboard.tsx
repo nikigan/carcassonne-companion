@@ -8,7 +8,7 @@ import type {
 } from '../types'
 import { contrastText } from '../colors'
 import { formatDescriptor, useI18n } from '../i18n'
-import { FEATURE_EMOJI, GOODS_EMOJI } from '../scoring'
+import { FEATURE_EMOJI, GOODS_EMOJI, type FeatureType } from '../scoring'
 import { ScoreModal } from './ScoreModal'
 
 interface Props {
@@ -16,6 +16,12 @@ interface Props {
   onScore: (playerId: string, amount: number, desc: ScoreDescriptor) => void
   onRecordTokens: (playerId: string, delta: TokenDelta) => void
   onUndo: (entryId: string) => void
+  /** Player ids with an unresolved 📜 message (The Messengers). */
+  messagePending?: Set<string>
+  /** Resolve the message moment — clears every badge. */
+  onClearMessages?: () => void
+  /** Dismiss one player's badge (they earned no message — not their turn). */
+  onDismissMessage?: (playerId: string) => void
 }
 
 /** Delay (ms) before the leaderboard re-sorts after a score change. */
@@ -36,10 +42,32 @@ function sortedIds(players: Player[]): string[] {
 }
 
 /** The in-game view: ranked player cards + quick actions + score log. */
-export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
+export function Scoreboard({
+  state,
+  onScore,
+  onRecordTokens,
+  onUndo,
+  messagePending,
+  onClearMessages,
+  onDismissMessage,
+}: Props) {
   const { t, lang } = useI18n()
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [initialFeature, setInitialFeature] = useState<FeatureType | undefined>(
+    undefined,
+  )
   const active = state.players.find((p) => p.id === activeId) ?? null
+
+  const openScore = (id: string) => {
+    setInitialFeature(undefined)
+    setActiveId(id)
+  }
+  // Badge tap = "this player receives it": open their Messages form, clear all.
+  const openMessage = (id: string) => {
+    setInitialFeature('message')
+    setActiveId(id)
+    onClearMessages?.()
+  }
 
   // Display order lags behind the true ranking: it re-sorts only after scores
   // have been quiet for RESORT_DELAY, so the list doesn't jump on every tap.
@@ -151,6 +179,27 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
                   {p.score}
                 </div>
                 <GoodsRow goods={p.goods} gold={p.gold} />
+                {messagePending?.has(p.id) && (
+                  <div className="mt-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 py-0.5 pl-2 pr-0.5 text-amber-200 motion-safe:animate-pulse">
+                    <button
+                      type="button"
+                      onClick={() => openMessage(p.id)}
+                      aria-label={t.messageBadgeAria(p.name)}
+                      className="flex items-center gap-1 text-xs font-semibold"
+                    >
+                      <span aria-hidden>{FEATURE_EMOJI.message}</span>
+                      {t.featureNames.message}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDismissMessage?.(p.id)}
+                      aria-label={t.messageDismissAria(p.name)}
+                      className="ml-0.5 rounded-full px-1 text-xs text-amber-200/70 hover:bg-white/10 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -168,7 +217,7 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
                   +
                 </button>
                 <button
-                  onClick={() => setActiveId(p.id)}
+                  onClick={() => openScore(p.id)}
                   className="h-10 rounded-xl bg-amber-500 px-3 text-sm font-bold text-gray-900 hover:bg-amber-400 active:scale-95"
                 >
                   {t.scoreBtn}
@@ -228,6 +277,7 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
           player={active}
           recentFeatures={recentFeatures}
           expansions={state.expansions}
+          initialFeature={initialFeature}
           onClose={() => setActiveId(null)}
           onScore={(amount, desc) => onScore(active.id, amount, desc)}
           onRecordTokens={(delta) => onRecordTokens(active.id, delta)}
