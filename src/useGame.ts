@@ -15,6 +15,64 @@ import { emptyGame, loadGame, saveGame, uid } from './storage'
 const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
 
 /**
+ * Sliding window (ms) during which repeated manual point changes to the same
+ * player collapse into one log entry. Each change extends the window; once it
+ * lapses, the next manual change starts a fresh entry.
+ */
+const MANUAL_MERGE_WINDOW = 3000
+
+/**
+ * Apply a manual point change, grouping rapid changes to the same player into a
+ * single running log entry. Score updates immediately; only the log entry is
+ * coalesced. If the player's newest manual entry is still within the merge
+ * window, the change folds into it (net 0 drops the entry); otherwise a new
+ * entry is prepended. Other players' entries between taps don't break a group.
+ */
+function applyManual(
+  s: GameState,
+  playerId: string,
+  amount: number,
+  now: number,
+  newId: string,
+): GameState {
+  const players = s.players.map((p) =>
+    p.id === playerId ? { ...p, score: p.score + amount } : p,
+  )
+
+  // log is prepended newest-first, so the first match is the newest entry.
+  const open = s.log.find(
+    (e) => e.playerId === playerId && e.desc.kind === 'manual',
+  )
+
+  if (open && now - open.timestamp < MANUAL_MERGE_WINDOW) {
+    const net = open.amount + amount
+    if (net === 0) {
+      return { ...s, players, log: s.log.filter((e) => e.id !== open.id) }
+    }
+    const merged: ScoreEntry = {
+      ...open,
+      amount: net,
+      desc: { kind: 'manual', amount: net },
+      timestamp: now,
+    }
+    return {
+      ...s,
+      players,
+      log: s.log.map((e) => (e.id === open.id ? merged : e)),
+    }
+  }
+
+  const entry: ScoreEntry = {
+    id: newId,
+    playerId,
+    amount,
+    desc: { kind: 'manual', amount },
+    timestamp: now,
+  }
+  return { ...s, players, log: [entry, ...s.log] }
+}
+
+/**
  * Central game state hook. Owns players + score log, persists to localStorage
  * on every change, and exposes intent-named actions.
  */
@@ -87,6 +145,14 @@ export function useGame() {
   const addScore = useCallback(
     (playerId: string, amount: number, desc: ScoreDescriptor) => {
       if (!Number.isFinite(amount) || amount === 0) return
+      // Manual changes coalesce into a running entry per player (see applyManual).
+      // Compute impure values outside the updater so it stays pure under StrictMode.
+      if (desc.kind === 'manual') {
+        const now = Date.now()
+        const newId = uid()
+        setState((s) => applyManual(s, playerId, amount, now, newId))
+        return
+      }
       const entry: ScoreEntry = {
         id: uid(),
         playerId,
