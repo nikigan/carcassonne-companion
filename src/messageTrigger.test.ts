@@ -24,7 +24,8 @@ describe('messageQualifies', () => {
 })
 
 describe('kindCanTriggerMessage', () => {
-  it('excludes end-of-game tallies (gold, trade goods)', () => {
+  it('excludes end-of-game scores (fields, gold, trade goods)', () => {
+    expect(kindCanTriggerMessage('field')).toBe(false)
     expect(kindCanTriggerMessage('gold')).toBe(false)
     expect(kindCanTriggerMessage('goodsBonus')).toBe(false)
   })
@@ -34,7 +35,6 @@ describe('kindCanTriggerMessage', () => {
       'road',
       'city',
       'cloister',
-      'field',
       'castle',
       'message',
       'circus',

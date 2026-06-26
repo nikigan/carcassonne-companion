@@ -16,11 +16,16 @@ export function messageQualifies(amount: number, total: number): boolean {
 }
 
 /**
- * Trade goods and gold are tallied in one batch *after* play ends (the menu's
- * "Score …" actions), so they never move a figure during the game and must not
- * draw a message. Every other score is an in-play feature/manual move that can.
+ * Fields, trade goods and gold are all scored at game *end* — fields only count
+ * when the game is over, and goods/gold are tallied in one batch via the menu —
+ * so they never move a figure during play and must not draw a message. Every
+ * other score is an in-play feature/manual move that can.
  */
-const END_GAME_KINDS = new Set<ScoreDescriptor['kind']>(['gold', 'goodsBonus'])
+const END_GAME_KINDS = new Set<ScoreDescriptor['kind']>([
+  'field',
+  'gold',
+  'goodsBonus',
+])
 
 /** Whether a score of this kind can draw a message (i.e. is an in-play move). */
 export function kindCanTriggerMessage(kind: ScoreDescriptor['kind']): boolean {

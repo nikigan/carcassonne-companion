@@ -36,13 +36,14 @@ tap — so nudging e.g. 19→22 (passes 20) no longer misfires.
   settle. All 29 tests pass; build green.
 - Note: project DOES have Vitest (CLAUDE.md was stale; fixed).
 
-## Follow-up: exclude end-game tallies (done)
-Trade goods (`goodsBonus`) and gold (`gold`) are scored in one batch at game
-end, so they must not draw a message. Added pure `kindCanTriggerMessage(kind)`
-to `messageTrigger.ts` (exclude-list: gold, goodsBonus) + Vitest cases; the
-hook's discrete path now gates on it.
+## Follow-up: exclude end-game scores (done)
+Fields, trade goods and gold are scored at game end, so they must not draw a
+message. Added pure `kindCanTriggerMessage(kind)` to `messageTrigger.ts`
+(exclude-list: field, gold, goodsBonus) + Vitest cases; the hook's discrete
+path gates on it.
 - Verified live: recorded 5 gold for Ann (15), "Score gold" → +10 → 25 (lands
-  on multiple of 5, amount ÷5) → no badge/toast. 31 tests pass; build green.
+  on multiple of 5, amount ÷5) → no badge/toast. `field` added after by the
+  same mechanism (unit-tested). 31 tests pass; build green.
 
 ## Notes
 - No test runner; `npm run build` is the gate.

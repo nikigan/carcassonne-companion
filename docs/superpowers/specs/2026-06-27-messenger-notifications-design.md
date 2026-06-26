@@ -54,14 +54,14 @@ messageQualifies(amount, total) =
   amount > 0 && (amount % 5 === 0 || total % 5 === 0)
 ```
 
-It watches `state.log`. **Trade goods and gold are excluded** — they're tallied in one
-batch *after* play ends (the menu's "Score …" actions), so they never move a figure
-during the game and must not draw a message. The pure predicate
-`kindCanTriggerMessage(kind)` (also in `messageTrigger.ts`, unit-tested) encodes this as
-an exclude-list (`gold`, `goodsBonus`), so any future in-play feature triggers by
-default. Entry ids are tracked in a `Set` so multiplayer's optimistic-then-reconciled
-echo of the same id cannot double-fire; initial load and snapshot-resync are seeded as
-history and never alert.
+It watches `state.log`. **Fields, trade goods and gold are excluded** — they're scored at
+game *end* (fields only count once the game is over; goods/gold are tallied in one batch
+via the menu), so they never move a figure during play and must not draw a message. The
+pure predicate `kindCanTriggerMessage(kind)` (also in `messageTrigger.ts`, unit-tested)
+encodes this as an exclude-list (`field`, `gold`, `goodsBonus`), so any future in-play
+feature triggers by default. Entry ids are tracked in a `Set` so multiplayer's
+optimistic-then-reconciled echo of the same id cannot double-fire; initial load and
+snapshot-resync are seeded as history and never alert.
 
 **Discrete in-play scores** (features, message tiles) are judged the moment a single new
 entry is prepended, against `messageQualifies(entry.amount, player.score)`. A message
@@ -196,7 +196,8 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
 
 ## Edge cases
 
-- Trade goods (`goodsBonus`) and gold (`gold`) are end-of-game tallies → never trigger.
+- Fields (`field`), trade goods (`goodsBonus`) and gold (`gold`) are scored at game end
+  → never trigger.
 - `amount === 0` never reaches the hook (`addScore` rejects it) and is excluded anyway.
 - Negative amounts / a manual burst netting ≤ 0 do not trigger (`amount > 0`).
 - Incremental ±1 manual taps that graze a multiple of 5 mid-burst do **not** misfire —
