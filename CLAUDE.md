@@ -90,13 +90,24 @@ from the menu at game end via `goldRate`); The Messages (📜 manual point entry
 
 ## Deployment
 
-Pushes to **`main`** auto-deploy to **GitHub Pages** via
-`.github/workflows/deploy.yml` (build → upload artifact → deploy). Live at
-**https://nikigan.github.io/carcassonne-companion/**.
+Deployed to **Cloudflare Workers (Static Assets)**. Live at
+**https://carcassonne.gankin.xyz**.
 
-Because it's a project site under a subpath, `vite.config.ts` sets
-`base: '/carcassonne-companion/'` — keep that, and reference public assets with
-root-relative paths (Vite rewrites them with the base).
+- `wrangler.jsonc` configures an **assets-only** Worker: Cloudflare serves the
+  built `dist/` directly (no server code yet). `not_found_handling:
+  single-page-application` makes unmatched routes serve `index.html` (SPA deep
+  links). The custom domain is attached via `routes` + `custom_domain: true`,
+  which auto-provisions DNS + TLS on the `gankin.xyz` zone.
+- Served from the **domain root**, so `vite.config.ts` sets `base: '/'`.
+  Reference public assets with root-relative paths.
+- **CI/CD:** **Cloudflare Workers Builds** (git-connected) auto-builds + deploys
+  on push to `main` (build `npm run build`, deploy `npx wrangler deploy`). Manual
+  deploys: `npm run deploy` (runs the build, then `wrangler deploy`).
+
+**Future server (multiplayer):** add a `main` entry + bindings (e.g. Durable
+Objects, WebSockets) to the same `wrangler.jsonc` / Worker — no re-platforming.
+Architecture, code sketches, and a phased rollout live in
+[`docs/multiplayer.md`](docs/multiplayer.md).
 
 ## Git
 

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "carcassonne-companion",
+  "compatibility_date": "2026-06-26",
+
+  // Assets-only Worker: Cloudflare serves the built SPA from ./dist directly.
+  // No server code today. A multiplayer backend can be added later by introducing
+  // a "main" entry (+ Durable Objects bindings) alongside this same config.
+  "assets": {
+    "directory": "./dist",
+    // SPA fallback: unmatched routes return 200 + index.html so client-side
+    // navigation / deep links work.
+    "not_found_handling": "single-page-application"
+  },
+
+  // Custom domain on the gankin.xyz zone. Wrangler auto-provisions the DNS record
+  // and TLS certificate on first deploy.
+  "routes": [
+    { "pattern": "carcassonne.gankin.xyz", "custom_domain": true }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Served from https://<user>.github.io/carcassonne-companion/ on GitHub Pages.
-  base: '/carcassonne-companion/',
+  // Served from the domain root (https://carcassonne.gankin.xyz/) on Cloudflare.
+  base: '/',
   plugins: [react(), tailwindcss()],
 })
