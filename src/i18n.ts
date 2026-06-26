@@ -166,6 +166,11 @@ export interface Strings {
   copyLink: string
   linkCopied: string
   scanToJoin: string
+  scanQr: string
+  scanQrHint: string
+  scanCameraDenied: string
+  scanNoCamera: string
+  scanInvalidQr: string
   leaveRoom: string
   confirmLeaveRoom: string
   statusConnecting: string
@@ -331,6 +336,11 @@ const en: Strings = {
   copyLink: 'Copy link',
   linkCopied: 'Copied!',
   scanToJoin: 'Scan to join',
+  scanQr: 'Scan QR',
+  scanQrHint: 'Point at the room QR',
+  scanCameraDenied: 'Camera access denied. Enable it in settings, or join by code.',
+  scanNoCamera: 'No camera available. Join by code instead.',
+  scanInvalidQr: "That's not a room QR.",
   leaveRoom: 'Leave room',
   confirmLeaveRoom: 'Leave this shared game? Your device returns to solo play.',
   statusConnecting: 'Connecting…',
@@ -501,6 +511,11 @@ const ru: Strings = {
   copyLink: 'Скопировать ссылку',
   linkCopied: 'Скопировано!',
   scanToJoin: 'Отсканируйте, чтобы войти',
+  scanQr: 'Сканировать QR',
+  scanQrHint: 'Наведите на QR-код комнаты',
+  scanCameraDenied: 'Доступ к камере запрещён. Разрешите его в настройках или войдите по коду.',
+  scanNoCamera: 'Камера недоступна. Войдите по коду.',
+  scanInvalidQr: 'Это не QR-код комнаты.',
   leaveRoom: 'Выйти из комнаты',
   confirmLeaveRoom: 'Выйти из общей игры? Устройство вернётся к одиночной игре.',
   statusConnecting: 'Подключение…',
