@@ -129,21 +129,26 @@ export default function App() {
                           }}
                         />
                       )}
-                      <MenuItem
-                        label={t.resetScores}
-                        onClick={() => {
-                          if (confirm(t.confirmReset)) game.resetScores()
-                          setMenuOpen(false)
-                        }}
-                      />
-                      <MenuItem
-                        label={t.newGame}
-                        danger
-                        onClick={() => {
-                          if (confirm(t.confirmNewGame)) game.newGame()
-                          setMenuOpen(false)
-                        }}
-                      />
+                      {/* Nuclear actions: solo always; in a room only the host. */}
+                      {(!room || room.isHost) && (
+                        <>
+                          <MenuItem
+                            label={t.resetScores}
+                            onClick={() => {
+                              if (confirm(t.confirmReset)) game.resetScores()
+                              setMenuOpen(false)
+                            }}
+                          />
+                          <MenuItem
+                            label={t.newGame}
+                            danger
+                            onClick={() => {
+                              if (confirm(t.confirmNewGame)) game.newGame()
+                              setMenuOpen(false)
+                            }}
+                          />
+                        </>
+                      )}
                     </div>
                   </>
                 )}

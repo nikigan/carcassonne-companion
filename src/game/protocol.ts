@@ -5,7 +5,11 @@ export interface RoomSnapshot { type: 'snapshot'; state: GameState; seq: number;
 export interface RoomActionMsg { type: 'action'; actionId: string; action: GameAction; seq: number }
 export interface RoomErrorMsg { type: 'error'; message: string }
 export type ServerMessage = RoomSnapshot | RoomActionMsg | RoomErrorMsg
-export type ClientMessage = { type: 'action'; actionId: string; action: GameAction }
+export type ClientMessage = { type: 'action'; actionId: string; action: GameAction; hostToken?: string }
+
+/** Actions only the room host (creator) may run. Typed against GameAction's
+ *  type union so a rename or typo fails the build. */
+export const HOST_ONLY_ACTIONS: readonly GameAction['type'][] = ['newGame', 'resetScores']
 
 /** Unambiguous alphabet — no 0/O/1/I/L. */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'

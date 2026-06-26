@@ -11,9 +11,10 @@ import { generateRoomCode, roomCodeFromPath, roomPath } from './game/protocol'
 import {
   loadGame, saveGame, uid,
   loadActiveRoom, saveActiveRoom, loadRoomCache, saveRoomCache, clearRoomCache,
+  loadHostToken, saveHostToken,
 } from './storage'
 
-export interface RoomInfo { code: string; status: RoomStatus }
+export interface RoomInfo { code: string; status: RoomStatus; isHost: boolean }
 
 export function useGame() {
   const [state, setState] = useState<GameState>(() => loadGame())
@@ -25,6 +26,9 @@ export function useGame() {
   const [room, setRoom] = useState<RoomInfo | null>(null)
   const syncRef = useRef<RoomSyncState | null>(null)
   const connRef = useRef<RoomConnection | null>(null)
+  // The host token for the current room (the creator's secret). Null when we're
+  // not the host. Lives in a ref so socket callbacks always read the current value.
+  const hostTokenRef = useRef<string | null>(null)
 
   // Skip persisting on the very first render: `state` was just hydrated from
   // storage, so writing it straight back is redundant. After that, branch on
@@ -55,7 +59,7 @@ export function useGame() {
           : initialSync(msg.state, msg.seq, msg.recentActionIds)
         // Resend still-pending optimistic actions; the server dedupes by id.
         for (const p of syncRef.current.pending) {
-          conn.send({ type: 'action', actionId: p.actionId, action: p.action })
+          conn.send({ type: 'action', actionId: p.actionId, action: p.action, hostToken: hostTokenRef.current ?? undefined })
         }
         pushDisplayed()
       },
@@ -81,7 +85,7 @@ export function useGame() {
       const actionId = uid()
       syncRef.current = applyLocal(syncRef.current, actionId, action)
       setState(displayedState(syncRef.current))
-      connRef.current.send({ type: 'action', actionId, action })
+      connRef.current.send({ type: 'action', actionId, action, hostToken: hostTokenRef.current ?? undefined })
     } else {
       setState((s) => applyAction(s, action))
     }
@@ -128,14 +132,19 @@ export function useGame() {
     // (server reports `seeded: false`); give up after a few attempts.
     for (let i = 0; i < 3; i++) {
       const code = generateRoomCode()
+      // The creator mints a host token, persists it per-room, and seeds it to
+      // the DO so only this device can later run the host-only actions.
+      const hostToken = uid()
       const res = await fetch(`/api/room/${code}`, {
-        method: 'POST', body: JSON.stringify({ state }),
+        method: 'POST', body: JSON.stringify({ state, hostToken }),
       }).then((r) => r.json() as Promise<{ ok: boolean; seeded: boolean }>).catch(() => null)
       if (res?.seeded) {
+        saveHostToken(code, hostToken)
+        hostTokenRef.current = hostToken
         syncRef.current = initialSync(state, 0)
         saveActiveRoom(code); saveRoomCache(code, state)
         history.pushState(null, '', roomPath(code))
-        setRoom({ code, status: 'connecting' })
+        setRoom({ code, status: 'connecting', isHost: true })
         openConnection(code)
         return code
       }
@@ -150,11 +159,15 @@ export function useGame() {
     // use the current displayed state as a placeholder (the real snapshot
     // will replace it and replay any pending actions on top).
     const cached = loadRoomCache(code)
+    // A returning creator still has the stored host token → host again; a fresh
+    // joiner has none → not host.
+    const token = loadHostToken(code)
+    hostTokenRef.current = token
     syncRef.current = initialSync(cached ?? state, 0)
     setState(displayedState(syncRef.current))
     saveActiveRoom(code)
     history.pushState(null, '', roomPath(code))
-    setRoom({ code, status: 'connecting' })
+    setRoom({ code, status: 'connecting', isHost: token !== null })
     openConnection(code)
   }, [state, openConnection])
 
@@ -162,6 +175,9 @@ export function useGame() {
     connRef.current?.close()
     connRef.current = null
     syncRef.current = null
+    // Forget the live token but keep the localStorage copy, so a future rejoin
+    // restores host.
+    hostTokenRef.current = null
     const code = room?.code
     if (code) { saveActiveRoom(null); clearRoomCache(code) }
     setRoom(null)

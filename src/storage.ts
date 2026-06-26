@@ -41,6 +41,7 @@ export function saveGame(state: GameState): void {
 
 const ACTIVE_ROOM_KEY = 'carcassonne-companion:active-room'
 const roomKey = (code: string) => `carcassonne-companion:room:${code}`
+const hostKey = (code: string) => `carcassonne-companion:host:${code}`
 
 export function loadActiveRoom(): string | null {
   try { return localStorage.getItem(ACTIVE_ROOM_KEY) } catch { return null }
@@ -66,6 +67,18 @@ export function saveRoomCache(code: string, state: GameState): void {
 
 export function clearRoomCache(code: string): void {
   try { localStorage.removeItem(roomKey(code)) } catch { /* ignore */ }
+}
+
+// The creator's host token for a room. Kept per-room (never cleared on leave)
+// so a returning creator who rejoins regains host. The absence of a token is
+// how a fresh joiner is identified as a non-host.
+
+export function loadHostToken(code: string): string | null {
+  try { return localStorage.getItem(hostKey(code)) } catch { return null }
+}
+
+export function saveHostToken(code: string, token: string): void {
+  try { localStorage.setItem(hostKey(code), token) } catch { /* ignore */ }
 }
 
 /**
