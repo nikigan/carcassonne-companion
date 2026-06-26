@@ -140,6 +140,7 @@ export function PlayerSetup({
           >
             {t.playOnMultipleDevices}
           </button>
+          <div className="pt-0.5 text-xs font-medium text-white/40">{t.joinByCode}</div>
           <div className="flex gap-2">
             <input
               value={joinCode}

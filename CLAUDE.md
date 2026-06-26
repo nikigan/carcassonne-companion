@@ -94,8 +94,10 @@ from the menu at game end via `goldRate`); The Messages (📜 manual point entry
 Deployed to **Cloudflare Workers (Static Assets)**. Live at
 **https://carcassonne.gankin.xyz**.
 
-- `wrangler.jsonc` configures an **assets-only** Worker: Cloudflare serves the
-  built `dist/` directly (no server code yet). `not_found_handling:
+- `wrangler.jsonc` configures the Worker with a **`main` entry**
+  (`src/server/index.ts`): it serves the `GameRoom` Durable Object and routes
+  `/api/room/<code>` to it, while static assets (the @cloudflare/vite-plugin
+  build now emits `dist/client`) are served directly. `not_found_handling:
   single-page-application` makes unmatched routes serve `index.html` (SPA deep
   links). The custom domain is attached via `routes` + `custom_domain: true`,
   which auto-provisions DNS + TLS on the `gankin.xyz` zone.

@@ -47,9 +47,14 @@ export class GameRoom extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     // Seed (create): POST the initial GameState; only succeeds on an empty room.
     if (request.method === 'POST') {
-      const body = (await request.json()) as { state: GameState }
+      const body = (await request.json()) as { state?: unknown }
+      const state = body?.state as GameState | undefined
+      // Reject malformed bodies — seeding `undefined` here would brick the room.
+      if (!state || !Array.isArray(state.players) || !Array.isArray(state.log)) {
+        return Response.json({ ok: false, seeded: false })
+      }
       const empty = this.data.state.players.length === 0 && this.data.state.log.length === 0
-      if (empty) { this.data = { state: body.state, seq: 0, recentActionIds: [] }; this.persist() }
+      if (empty) { this.data = { state, seq: 0, recentActionIds: [] }; this.persist() }
       return Response.json({ ok: true, seeded: empty })
     }
     // Join: WebSocket upgrade.
@@ -74,12 +79,21 @@ export class GameRoom extends DurableObject<Env> {
       ws.send(JSON.stringify(this.snapshot()))
       return
     }
-    // Apply authoritatively, PERSIST FIRST, then broadcast.
-    this.data.state = applyAction(this.data.state, msg.action)
-    this.data.seq += 1
-    this.data.recentActionIds = [...this.data.recentActionIds, msg.actionId].slice(-RECENT_LIMIT)
-    this.persist()
-    this.broadcast({ type: 'action', actionId: msg.actionId, action: msg.action, seq: this.data.seq })
+    // Guard against a malformed action, then apply authoritatively, PERSIST
+    // FIRST, then broadcast. A thrown reducer error must not bump seq or persist.
+    if (!msg.action || typeof msg.action !== 'object') {
+      ws.send(JSON.stringify({ type: 'error', message: 'invalid action' } satisfies ServerMessage))
+      return
+    }
+    try {
+      this.data.state = applyAction(this.data.state, msg.action)
+      this.data.seq += 1
+      this.data.recentActionIds = [...this.data.recentActionIds, msg.actionId].slice(-RECENT_LIMIT)
+      this.persist()
+      this.broadcast({ type: 'action', actionId: msg.actionId, action: msg.action, seq: this.data.seq })
+    } catch {
+      ws.send(JSON.stringify({ type: 'error', message: 'action failed' } satisfies ServerMessage))
+    }
   }
 
   async webSocketClose(ws: WebSocket, code: number) {

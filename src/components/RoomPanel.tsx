@@ -25,11 +25,17 @@ export function RoomPanel({ code, onClose, onLeave }: { code: string; onClose: (
             <QRCodeSVG value={url} size={180} level="M" marginSize={1} />
           </div>
           <p className="text-xs text-white/50">{t.scanToJoin}</p>
-          <div className="text-2xl font-mono font-bold tracking-widest">{code}</div>
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-xs text-white/50">{t.roomCode}</span>
+            <div className="text-2xl font-mono font-bold tracking-widest">{code}</div>
+          </div>
           <button onClick={copy} className="w-full rounded-xl bg-white/10 py-3 font-medium hover:bg-white/15">
             {copied ? t.linkCopied : t.copyLink}
           </button>
-          <button onClick={onLeave} className="w-full rounded-xl py-3 font-medium text-red-400 hover:bg-white/10">
+          <button
+            onClick={() => { if (!window.confirm(t.confirmLeaveRoom)) return; onLeave() }}
+            className="w-full rounded-xl py-3 font-medium text-red-400 hover:bg-white/10"
+          >
             {t.leaveRoom}
           </button>
         </div>

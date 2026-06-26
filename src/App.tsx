@@ -54,7 +54,11 @@ export default function App() {
             </div>
 
             {room && (
-              <button onClick={() => setRoomPanelOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1 text-xs font-mono">
+              <button
+                onClick={() => setRoomPanelOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2 py-1 text-xs font-mono"
+                aria-label={`${room.code} — ${room.status === 'open' ? t.statusConnected : room.status === 'reconnecting' ? t.statusReconnecting : t.statusConnecting}`}
+              >
                 <span className={`h-2 w-2 rounded-full ${room.status === 'open' ? 'bg-green-400' : room.status === 'reconnecting' ? 'bg-amber-400' : 'bg-white/40'}`} />
                 {room.code}
               </button>

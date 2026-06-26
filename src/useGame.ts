@@ -47,6 +47,7 @@ export function useGame() {
   // The handlers close over `conn`; they fire asynchronously (after the socket
   // connects), by which point `conn` is assigned, so resending pending is safe.
   const openConnection = useCallback((code: string) => {
+    connRef.current?.close()
     const conn = new RoomConnection(code, {
       onSnapshot: (msg) => {
         syncRef.current = syncRef.current
