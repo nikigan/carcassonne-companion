@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import QrScanner from 'qr-scanner'
 import { roomCodeFromPath } from '../game/protocol'
 import { useI18n } from '../i18n'
@@ -97,7 +98,11 @@ export function QrScanModal({ onResult, onClose }: Props) {
     }
   }, [])
 
-  return (
+  // Render through a portal to <body>: the join controls live inside a
+  // `backdrop-blur` action bar, and `backdrop-filter` makes that element a
+  // containing block for `position: fixed` descendants — which would otherwise
+  // pin this overlay to the bar instead of the viewport.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
       <video
         ref={videoRef}
@@ -125,6 +130,7 @@ export function QrScanModal({ onResult, onClose }: Props) {
           {!error && (sawInvalid ? t.scanInvalidQr : t.scanQrHint)}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
