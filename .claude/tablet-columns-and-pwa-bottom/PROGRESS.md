@@ -47,5 +47,11 @@
   needs an on-device check (install PWA, short log → no black band at bottom).
 - Changes are uncommitted, ready to commit when the user asks.
 
-## Out of scope
-- PlayerSetup (pre-game) stays centered/single-column.
+## Follow-up: PlayerSetup two columns (done)
+- The pre-game screen also goes two-column at `md`: players (heading, list,
+  add-player form) on the left, expansions on the right. Container →
+  `md:grid md:max-w-5xl md:grid-cols-2 md:items-start md:gap-6`; players wrapped
+  in one grid cell, expansions in the other (`mt-6 md:mt-0`). The fixed bottom
+  action bar (Start / room controls) stays centered, unchanged. Phones unchanged.
+- Verified in-browser at ~1200px: players left, expansions right, action bar
+  centered. `npm run build` green.
