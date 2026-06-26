@@ -119,8 +119,11 @@ export class GameRoom extends DurableObject<Env> {
       this.bumpIdleAlarm()
       return
     }
-    // Truly idle: wipe all storage and reset in-memory state.
+    // Truly idle: wipe all storage and reset in-memory state. deleteAll() drops
+    // the SQL table too, so recreate it in case this instance stays alive and
+    // serves another request before eviction (persist() would otherwise throw).
     await this.ctx.storage.deleteAll()
+    this.ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS room (k TEXT PRIMARY KEY, v TEXT NOT NULL)`)
     this.data = { state: emptyGame, seq: 0, recentActionIds: [] }
   }
 }
