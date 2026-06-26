@@ -1,15 +1,10 @@
 import type { GameState, Player, ScoreEntry } from './types'
 import { emptyGoods } from './types'
-import { ALL_ON, BASE_ONLY, normalizeConfig } from './expansions'
+import { ALL_ON, normalizeConfig } from './expansions'
+import { emptyGame } from './game/reducer'
+export { emptyGame }
 
 const STORAGE_KEY = 'carcassonne-companion:game'
-
-export const emptyGame: GameState = {
-  players: [],
-  log: [],
-  started: false,
-  expansions: BASE_ONLY,
-}
 
 export function loadGame(): GameState {
   try {
