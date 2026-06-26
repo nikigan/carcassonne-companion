@@ -143,6 +143,5 @@ Design spec: `docs/superpowers/specs/2026-06-26-pwa-design.md`.
 
 ## Git
 
-Commit only when work is verified (`npm run build` clean). End commit messages
-with the project's `Co-Authored-By` / `Claude-Session` trailers. Do not create
+Commit only when work is verified (`npm run build` clean). Do not create
 PRs unless asked.

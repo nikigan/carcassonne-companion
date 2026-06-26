@@ -74,9 +74,10 @@ The hook exposes:
 
 ```ts
 {
-  pending: Set<string>          // player ids currently showing a badge
-  toast: { id: number } | null  // present briefly after a trigger; drives the toast
-  clear: () => void             // clears all pending badges
+  pending: Set<string>            // player ids currently showing a badge
+  toast: { id: number } | null    // present briefly after a trigger; drives the toast
+  clear: () => void               // clears ALL pending badges (a message was resolved)
+  dismiss: (id: string) => void   // removes ONE player's badge (false positive)
   soundOn: boolean
   setSoundOn: (on: boolean) => void
 }
@@ -89,17 +90,27 @@ play the chime (if `soundOn`). `clear()` is also called on reset / new game.
 
 `pending` is a **set** of player ids. If a shared completed feature is scored for
 several players in a row and more than one lands on a ÷5, **each shows a 📜 badge** —
-because the app cannot know whose turn it is. The human does: **tapping any badge opens
-that player's Messages form and clears every badge** (only the active player actually
-draws). Reset / new game also clears.
+because the app cannot know whose turn it is. The human resolves the ambiguity.
 
-- Badge renders on the player card in `Scoreboard.tsx` for ids in `pending`.
-- It has an `aria-label` (e.g. "{name} — open message") and a gentle pulse that is
-  disabled under `prefers-reduced-motion`.
-- **Tap behavior:** open `ScoreModal` for that player, pre-selected to the 📜 Messages
-  form, then `clear()`. This requires threading an initial feature:
+The badge is a 📜 chip with **two affordances**:
+
+- **Tap the chip — "this player receives it":** open `ScoreModal` for that player,
+  pre-selected to the 📜 Messages form, then `clear()` (all badges go, since only the
+  active player draws for that scoring moment).
+- **Tap the chip's ✕ — "not their turn":** `dismiss(id)` removes **only that player's**
+  badge. This is the case where a player crossed a ÷5 on someone else's turn (e.g. they
+  scored from a shared feature the active player completed) and so earns no message —
+  and there may be no other badge to "resolve" away. The ✕ clears that false positive
+  on its own.
+
+Reset / new game also clears all. Badge details:
+
+- Renders on the player card in `Scoreboard.tsx` for ids in `pending`.
+- `aria-label`s for both controls (chip "open message", ✕ "dismiss message") and a
+  gentle pulse disabled under `prefers-reduced-motion`.
+- Opening the form pre-selected requires threading an initial feature:
   - `Scoreboard` already owns `activeId`/`setActiveId`; add an `initialFeature` state
-    set alongside it when a badge is tapped.
+    set alongside it when a chip is tapped.
   - `ScoreModal` gains `initialFeature?: FeatureType`; when set it forces `tab='preset'`
     and passes it down.
   - `PresetForms` gains `initialFeature?: FeatureType` to seed its `feature` `useState`
@@ -147,6 +158,7 @@ New i18n keys (both `en` + `ru`, TypeScript enforces completeness):
 | --- | --- | --- |
 | `messageAvailable` | 📜 A message is available! | 📜 Появилось послание! |
 | `messageBadgeAria(name)` | `${name} — open message` | `${name} — открыть послание` |
+| `messageDismissAria(name)` | `${name} — dismiss message` | `${name} — убрать послание` |
 | `soundLabel` | Sound | Звук |
 
 ## Wiring / data flow
@@ -155,8 +167,11 @@ New i18n keys (both `en` + `ru`, TypeScript enforces completeness):
 App
  ├─ useGame() ............................ game state (unchanged)
  ├─ useMessageAlerts(game.state) ........ NEW: pending / toast / clear / sound
- ├─ <Scoreboard pending=… onOpenMessage=(id)=>{ openModal(id,'message'); clear() } />
- │     └─ player card → 📜 badge when id ∈ pending
+ ├─ <Scoreboard
+ │      pending=…
+ │      onOpenMessage=(id)=>{ openModal(id,'message'); clear() }   // chip tap
+ │      onDismissMessage=(id)=>dismiss(id) />                       // ✕ tap
+ │     └─ player card → 📜 badge (chip + ✕) when id ∈ pending
  │     └─ <ScoreModal initialFeature=… />
  ├─ <MessageToast toast=… />  ........... NEW small toast
  ├─ <UpdatePrompt />
@@ -185,8 +200,8 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
 - Persisting pending badges across reloads.
 - Tracking/visualising the two figures' board positions.
 - Automating the tile's own resolution (stays manual via the 📜 Messages form).
-- Per-player "active turn" tracking (the badge-set + tap-to-clear is the deliberate
-  substitute).
+- Per-player "active turn" tracking (the badge-set, chip-to-resolve, and ✕-to-dismiss
+  are the deliberate substitute).
 
 ## Verification
 
@@ -194,6 +209,7 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
   in both `en` and `ru`).
 - Manual: enable The Messengers; score 5 / 10 → badge + toast + chime on that player;
   score 3 then 2 (total 5) → fires on the second; score 3 (total 3) → no fire; tap a
-  badge → opens that player's 📜 Messages form and all badges clear; toggle Sound off →
-  no chime, badge/toast still appear; reduced-motion → no pulse.
+  badge chip → opens that player's 📜 Messages form and all badges clear; tap a badge's
+  ✕ → only that player's badge goes, the rest stay; toggle Sound off → no chime,
+  badge/toast still appear; reduced-motion → no pulse.
 ```
