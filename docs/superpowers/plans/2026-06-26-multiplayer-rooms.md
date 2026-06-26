@@ -399,10 +399,12 @@ export function applyAction(s: GameState, action: GameAction): GameState {
       }
     case 'newGame':
       return { ...emptyGame, expansions: s.expansions }
-    default: {
-      const _exhaustive: never = action
+    default:
+      // Exhaustiveness: adding a GameAction variant without a case makes
+      // `action` non-`never` here and fails the build (no unused local, so
+      // noUnusedLocals stays happy).
+      action satisfies never
       return s
-    }
   }
 }
 ```
