@@ -5,6 +5,7 @@ import { contrastText, nextAvailableColor } from '../colors'
 import { useI18n } from '../i18n'
 import { ColorPicker } from './ColorPicker'
 import { ExpansionPicker } from './ExpansionPicker'
+import { QrScanModal } from './QrScanModal'
 
 interface Props {
   players: Player[]
@@ -38,6 +39,7 @@ export function PlayerSetup({
   const [name, setName] = useState('')
   const [color, setColor] = useState(() => nextAvailableColor(usedHexes))
   const [joinCode, setJoinCode] = useState('')
+  const [scanning, setScanning] = useState(false)
 
   // The action bar is fixed to the viewport bottom; reserve exactly its height
   // (it varies by language, wrapping, the safe-area inset, and whether the join
@@ -189,6 +191,19 @@ export function PlayerSetup({
                   {t.join}
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={() => setScanning(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+              >
+                <span aria-hidden>▣</span> {t.scanQr}
+              </button>
+              {scanning && (
+                <QrScanModal
+                  onResult={(code) => onJoinRoom(code)}
+                  onClose={() => setScanning(false)}
+                />
+              )}
             </>
           )}
         </div>
