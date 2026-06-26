@@ -29,6 +29,7 @@ export class RoomConnection {
   }
 
   private connect() {
+    if (this.closed) return
     this.handlers.onStatus(this.backoff === 500 ? 'connecting' : 'reconnecting')
     const ws = new WebSocket(wsUrl(this.code))
     this.ws = ws
