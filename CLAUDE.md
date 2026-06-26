@@ -127,6 +127,20 @@ and remains the default. `npm run dev` runs the client + DO together via
 Design spec: `docs/superpowers/specs/2026-06-26-multiplayer-rooms-design.md`.
 Rationale and architecture notes: [`docs/multiplayer.md`](docs/multiplayer.md).
 
+## PWA
+
+Installable + offline-capable via **`vite-plugin-pwa`** (Workbox `generateSW`,
+configured in `vite.config.ts`). The build precaches the app shell, so **solo
+play works fully offline** (state already lives in `localStorage`); multiplayer
+still needs a connection. The service worker's navigation fallback denylists
+`/^\/api\//` so it never shadows the `/api/room/<code>` WebSocket. Updates use
+`registerType: 'prompt'` — `src/components/UpdatePrompt.tsx` shows a localized
+"new version → Refresh" toast and never auto-reloads mid-game. Manifest +
+`apple-touch-icon`/`apple-mobile-web-app-*` meta live in `index.html`; the 🏰
+app icons are in `public/` (`pwa-*.png`, `apple-touch-icon-180x180.png`).
+
+Design spec: `docs/superpowers/specs/2026-06-26-pwa-design.md`.
+
 ## Git
 
 Commit only when work is verified (`npm run build` clean). End commit messages
