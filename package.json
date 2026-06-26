@@ -6,6 +6,7 @@
   "description": "A web companion app for the board game Carcassonne to track each player's score.",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "vite --host",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
