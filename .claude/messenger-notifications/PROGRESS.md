@@ -18,8 +18,10 @@ two-marker rule to one check.
 - [x] 5. `src/components/Scoreboard.tsx` — per-player 📜 badges (tap opens form, ✕ dismisses)
 - [x] 6. `src/App.tsx` — wire hook, toast, sound toggle, clear on reset/new game
 
-Status: code complete, `npm run build` green. Remaining: live manual smoke test
-in the browser (Task 6, Step 8).
+Status: DONE. `npm run build` green; live browser smoke test passed —
+score 5 → badge + toast; score 3 → none; score 2 (total 5) → badge (meeple
+path); ✕ dismisses one badge; tapping a chip opens that player's Message form
+pre-selected and clears all badges; EN/RU rename verified; no console errors.
 
 ## Notes
 - No test runner; `npm run build` is the gate.
