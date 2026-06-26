@@ -139,7 +139,17 @@ still needs a connection. The service worker's navigation fallback denylists
 `apple-touch-icon`/`apple-mobile-web-app-*` meta live in `index.html`; the 🏰
 app icons are in `public/` (`pwa-*.png`, `apple-touch-icon-180x180.png`).
 
-Design spec: `docs/superpowers/specs/2026-06-26-pwa-design.md`.
+An **in-app QR scanner** (`src/components/QrScanModal.tsx`, using the `qr-scanner`
+library) lets a player join a room by scanning the host's QR from inside the PWA:
+the OS cannot route a scanned URL into an installed PWA on iOS (it always opens
+Safari), so the in-app camera is the only cross-platform join-by-QR path. The
+overlay renders through a `createPortal` to `<body>` because the join controls
+sit inside a `backdrop-blur` action bar (a containing block for `position:fixed`).
+The manifest also carries Android-only `launch_handler`/`handle_links` hints so
+Chrome can capture in-scope `/r/<code>` links — a no-op on iOS.
+
+Design specs: `docs/superpowers/specs/2026-06-26-pwa-design.md`,
+`docs/superpowers/specs/2026-06-26-pwa-qr-scanner-design.md`.
 
 ## Git
 
