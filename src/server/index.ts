@@ -8,6 +8,7 @@ import type { ClientMessage, ServerMessage } from '../game/protocol'
 // bindings in wrangler.jsonc. We use it rather than redeclaring a local one.
 
 const RECENT_LIMIT = 500
+const IDLE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 interface Persisted {
   state: GameState
@@ -26,6 +27,10 @@ export class GameRoom extends DurableObject<Env> {
         .exec<{ v: string }>(`SELECT v FROM room WHERE k = 'data'`).toArray()[0]
       if (row) this.data = JSON.parse(row.v) as Persisted
     })
+  }
+
+  private bumpIdleAlarm(): void {
+    void this.ctx.storage.setAlarm(Date.now() + IDLE_TTL_MS)
   }
 
   private persist() {
@@ -51,10 +56,10 @@ export class GameRoom extends DurableObject<Env> {
       const state = body?.state as GameState | undefined
       // Reject malformed bodies — seeding `undefined` here would brick the room.
       if (!state || !Array.isArray(state.players) || !Array.isArray(state.log)) {
-        return Response.json({ ok: false, seeded: false })
+        return Response.json({ ok: false, seeded: false }, { status: 400 })
       }
       const empty = this.data.state.players.length === 0 && this.data.state.log.length === 0
-      if (empty) { this.data = { state, seq: 0, recentActionIds: [] }; this.persist() }
+      if (empty) { this.data = { state, seq: 0, recentActionIds: [] }; this.persist(); this.bumpIdleAlarm() }
       return Response.json({ ok: true, seeded: empty })
     }
     // Join: WebSocket upgrade.
@@ -63,6 +68,7 @@ export class GameRoom extends DurableObject<Env> {
     }
     const { 0: client, 1: server } = new WebSocketPair()
     this.ctx.acceptWebSocket(server)
+    this.bumpIdleAlarm()
     server.send(JSON.stringify(this.snapshot()))
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -81,7 +87,7 @@ export class GameRoom extends DurableObject<Env> {
     }
     // Guard against a malformed action, then apply authoritatively, PERSIST
     // FIRST, then broadcast. A thrown reducer error must not bump seq or persist.
-    if (!msg.action || typeof msg.action !== 'object') {
+    if (!msg.action || typeof msg.action !== 'object' || Array.isArray(msg.action)) {
       ws.send(JSON.stringify({ type: 'error', message: 'invalid action' } satisfies ServerMessage))
       return
     }
@@ -90,6 +96,7 @@ export class GameRoom extends DurableObject<Env> {
       this.data.seq += 1
       this.data.recentActionIds = [...this.data.recentActionIds, msg.actionId].slice(-RECENT_LIMIT)
       this.persist()
+      this.bumpIdleAlarm()
       this.broadcast({ type: 'action', actionId: msg.actionId, action: msg.action, seq: this.data.seq })
     } catch {
       ws.send(JSON.stringify({ type: 'error', message: 'action failed' } satisfies ServerMessage))
@@ -106,7 +113,16 @@ export class GameRoom extends DurableObject<Env> {
     // TODO(presence): drop from presence set.
   }
 
-  // TODO(cleanup): set a storage alarm to expire idle rooms after N days.
+  async alarm(): Promise<void> {
+    if (this.ctx.getWebSockets().length > 0) {
+      // Room still has connected clients — postpone rather than delete.
+      this.bumpIdleAlarm()
+      return
+    }
+    // Truly idle: wipe all storage and reset in-memory state.
+    await this.ctx.storage.deleteAll()
+    this.data = { state: emptyGame, seq: 0, recentActionIds: [] }
+  }
 }
 
 export default {
