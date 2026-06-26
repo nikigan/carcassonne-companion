@@ -14,8 +14,8 @@ export const emptyGame: GameState = {
 
 const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
 
-/** See useGame's original MANUAL_MERGE_WINDOW — rapid manual changes coalesce. */
-const MANUAL_MERGE_WINDOW = 3000
+/** Rapid manual changes within this window coalesce into one log entry. */
+export const MANUAL_MERGE_WINDOW = 3000
 
 /**
  * Every game mutation, as a serializable action. Impure values (new ids,
