@@ -159,9 +159,9 @@ export function Scoreboard({
                 if (el) cardRefs.current.set(p.id, el)
                 else cardRefs.current.delete(p.id)
               }}
-              className="flex items-center gap-3 rounded-2xl bg-white/5 p-3 will-change-transform"
+              className="flex items-center gap-3 rounded-2xl bg-overlay/5 p-3 will-change-transform"
             >
-              <span className="w-5 text-center text-sm font-bold text-white/40">
+              <span className="w-5 text-center text-sm font-bold text-fg/40">
                 {i + 1}
               </span>
               <span
@@ -194,7 +194,7 @@ export function Scoreboard({
                       type="button"
                       onClick={() => onDismissMessage?.(p.id)}
                       aria-label={t.messageDismissAria(p.name)}
-                      className="ml-0.5 rounded-full px-1 text-xs text-amber-200/70 hover:bg-white/10 hover:text-white"
+                      className="ml-0.5 rounded-full px-1 text-xs text-amber-200/70 hover:bg-overlay/10 hover:text-fg"
                     >
                       ✕
                     </button>
@@ -204,14 +204,14 @@ export function Scoreboard({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => onScore(p.id, -1, { kind: 'manual', amount: -1 })}
-                  className="h-10 w-10 rounded-xl bg-white/10 text-xl font-bold hover:bg-white/20 active:scale-95"
+                  className="h-10 w-10 rounded-xl bg-overlay/10 text-xl font-bold hover:bg-overlay/20 active:scale-95"
                   aria-label={t.subtractAria(p.name)}
                 >
                   −
                 </button>
                 <button
                   onClick={() => onScore(p.id, 1, { kind: 'manual', amount: 1 })}
-                  className="h-10 w-10 rounded-xl bg-white/10 text-xl font-bold hover:bg-white/20 active:scale-95"
+                  className="h-10 w-10 rounded-xl bg-overlay/10 text-xl font-bold hover:bg-overlay/20 active:scale-95"
                   aria-label={t.addPointAria(p.name)}
                 >
                   +
@@ -229,11 +229,11 @@ export function Scoreboard({
       </div>
 
       <div className="mt-8 md:mt-0">
-        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-white/40">
+        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-fg/40">
           {t.scoreLog}
         </h3>
         {state.log.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/10 p-4 text-center text-sm text-white/30">
+          <p className="rounded-xl border border-dashed border-line/10 p-4 text-center text-sm text-fg/30">
             {t.noPointsYet}
           </p>
         ) : (
@@ -241,14 +241,14 @@ export function Scoreboard({
             {state.log.slice(0, 50).map((e) => (
               <li
                 key={e.id}
-                className="flex items-center gap-2.5 rounded-lg bg-white/5 px-3 py-2 text-sm"
+                className="flex items-center gap-2.5 rounded-lg bg-overlay/5 px-3 py-2 text-sm"
               >
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: colorById(e.playerId) }}
                 />
                 <span className="font-medium">{nameById(e.playerId)}</span>
-                <span className="min-w-0 flex-1 truncate text-white/50">
+                <span className="min-w-0 flex-1 truncate text-fg/50">
                   {formatDescriptor(e.desc, lang)}
                 </span>
                 <span
@@ -261,7 +261,7 @@ export function Scoreboard({
                 </span>
                 <button
                   onClick={() => onUndo(e.id)}
-                  className="shrink-0 rounded px-1.5 py-0.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/80"
+                  className="shrink-0 rounded px-1.5 py-0.5 text-xs text-fg/40 hover:bg-overlay/10 hover:text-fg/80"
                   aria-label={t.undoAria}
                 >
                   {t.undo}
@@ -292,7 +292,7 @@ function GoodsRow({ goods, gold }: { goods: TradeGoods; gold: number }) {
   const hasGoods = goods.wine + goods.grain + goods.cloth > 0
   if (!hasGoods && gold === 0) return null
   return (
-    <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-white/50">
+    <div className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-fg/50">
       {hasGoods && (
         <>
           <span>

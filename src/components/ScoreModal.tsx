@@ -87,11 +87,11 @@ export function ScoreModal({
 
   return (
     <div
-      className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 sm:items-center"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-scrim/60 sm:items-center"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-gray-800 px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-surface px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center gap-3">
@@ -103,11 +103,11 @@ export function ScoreModal({
           </span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-lg font-bold">{player.name}</div>
-            <div className="text-sm text-white/50">{t.currentScore(player.score)}</div>
+            <div className="text-sm text-fg/50">{t.currentScore(player.score)}</div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg px-2 py-1 text-white/50 hover:bg-white/10"
+            className="rounded-lg px-2 py-1 text-fg/50 hover:bg-overlay/10"
             aria-label={t.close}
           >
             ✕
@@ -115,7 +115,7 @@ export function ScoreModal({
         </div>
 
         <div
-          className="mb-4 grid gap-1 rounded-xl bg-black/30 p-1 text-sm font-medium"
+          className="mb-4 grid gap-1 rounded-xl bg-field p-1 text-sm font-medium"
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tb) => (
@@ -123,7 +123,7 @@ export function ScoreModal({
               key={tb.key}
               onClick={() => setTab(tb.key)}
               className={`rounded-lg py-2 transition ${
-                tab === tb.key ? 'bg-white/15' : 'text-white/50'
+                tab === tb.key ? 'bg-overlay/15' : 'text-fg/50'
               }`}
             >
               {tb.label}
@@ -197,7 +197,7 @@ function PresetForms({
             className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-medium transition ${
               active === key
                 ? 'bg-amber-500 text-gray-900'
-                : 'bg-white/5 text-white/70 hover:bg-white/10'
+                : 'bg-overlay/5 text-fg/70 hover:bg-overlay/10'
             }`}
           >
             <span className="text-xl leading-none">{FEATURE_EMOJI[key]}</span>
@@ -254,11 +254,11 @@ function NumberField({
   const { t } = useI18n()
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
-      <span className="text-sm text-white/80">{label}</span>
+      <span className="text-sm text-fg/80">{label}</span>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="h-9 w-9 rounded-lg bg-white/10 text-lg font-bold hover:bg-white/20 active:scale-95"
+          className="h-9 w-9 rounded-lg bg-overlay/10 text-lg font-bold hover:bg-overlay/20 active:scale-95"
           aria-label={t.decreaseAria(label)}
         >
           −
@@ -268,11 +268,11 @@ function NumberField({
           inputMode="numeric"
           value={value}
           onChange={(e) => onChange(Math.max(min, Math.floor(Number(e.target.value) || 0)))}
-          className="w-14 rounded-lg bg-black/30 py-2 text-center text-base outline-none ring-1 ring-white/10 focus:ring-white/30"
+          className="w-14 rounded-lg bg-field py-2 text-center text-base outline-none ring-1 ring-line/10 focus:ring-line/30"
         />
         <button
           onClick={() => onChange(value + 1)}
-          className="h-9 w-9 rounded-lg bg-white/10 text-lg font-bold hover:bg-white/20 active:scale-95"
+          className="h-9 w-9 rounded-lg bg-overlay/10 text-lg font-bold hover:bg-overlay/20 active:scale-95"
           aria-label={t.increaseAria(label)}
         >
           +
@@ -299,10 +299,10 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className="flex w-full cursor-pointer items-center justify-between py-1.5 text-left"
     >
-      <span className="text-sm text-white/80">{label}</span>
+      <span className="text-sm text-fg/80">{label}</span>
       <span
         className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-          checked ? 'bg-emerald-500' : 'bg-white/20'
+          checked ? 'bg-emerald-500' : 'bg-overlay/20'
         }`}
       >
         <span
@@ -351,14 +351,14 @@ function MagicControl({
   ]
   return (
     <div className="py-1.5">
-      <span className="mb-1 block text-sm text-white/80">{t.magicLabel}</span>
-      <div className="grid grid-cols-3 gap-1 rounded-lg bg-black/30 p-0.5 text-xs font-medium">
+      <span className="mb-1 block text-sm text-fg/80">{t.magicLabel}</span>
+      <div className="grid grid-cols-3 gap-1 rounded-lg bg-field p-0.5 text-xs font-medium">
         {opts.map((o) => (
           <button
             key={o.key}
             onClick={() => onChange(o.key)}
             className={`rounded-md px-2 py-1.5 transition ${
-              value === o.key ? 'bg-white/15' : 'text-white/50'
+              value === o.key ? 'bg-overlay/15' : 'text-fg/50'
             }`}
             aria-pressed={value === o.key}
           >
@@ -395,7 +395,7 @@ function RoadForm({
         <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
       )}
       {mageWitch && <MagicControl value={magic} onChange={setMagic} />}
-      <p className="mt-1 text-xs text-white/40">{t.roadHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.roadHint}</p>
       <ApplyBar
         amount={amount}
         desc={{ kind: 'road', tiles, completed, inn, magic }}
@@ -438,7 +438,7 @@ function CityForm({
         />
       )}
       {mageWitch && <MagicControl value={magic} onChange={setMagic} />}
-      <p className="mt-1 text-xs text-white/40">{t.cityHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.cityHint}</p>
       <ApplyBar
         amount={amount}
         desc={{ kind: 'city', tiles, pennants, completed, cathedral, magic }}
@@ -459,7 +459,7 @@ function CloisterForm({ onApply }: { onApply: ApplyFn }) {
         value={surrounding}
         onChange={(n) => setSurrounding(Math.min(8, n))}
       />
-      <p className="mt-1 text-xs text-white/40">{t.cloisterHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.cloisterHint}</p>
       <ApplyBar
         amount={scoreCloister(surrounding, completed)}
         desc={{ kind: 'cloister', surrounding, completed }}
@@ -496,7 +496,7 @@ function FieldForm({
       {tradersBuilders && (
         <Toggle label={`${PIG_EMOJI} ${t.pig}`} checked={pig} onChange={setPig} />
       )}
-      <p className="mt-1 text-xs text-white/40">{t.fieldHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.fieldHint}</p>
       <ApplyBar
         amount={scoreField(cities, pig, castles)}
         desc={{ kind: 'field', cities, pig, castles }}
@@ -518,12 +518,12 @@ function CastleForm({
   return (
     <div>
       <NumberField label={t.castleValue} value={value} onChange={setValue} min={0} />
-      <p className="mt-1 text-xs text-white/40">{t.castleHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.castleHint}</p>
       <ApplyBar amount={scoreCastle(value)} desc={{ kind: 'castle', value }} onApply={onApply} />
 
       {recentFeatures.length > 0 && (
         <div className="mt-4">
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg/40">
             {t.useRecentScore}
           </h4>
           <ul className="space-y-1.5">
@@ -531,14 +531,14 @@ function CastleForm({
               <li key={e.id}>
                 <button
                   onClick={() => onApply(e.amount, { kind: 'castle', value: e.amount })}
-                  className="flex w-full items-center gap-2.5 rounded-lg bg-white/5 px-3 py-2 text-left text-sm transition hover:bg-white/10 active:scale-[0.99]"
+                  className="flex w-full items-center gap-2.5 rounded-lg bg-overlay/5 px-3 py-2 text-left text-sm transition hover:bg-overlay/10 active:scale-[0.99]"
                 >
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: e.playerColor }}
                   />
                   <span className="font-medium">{e.playerName}</span>
-                  <span className="min-w-0 flex-1 truncate text-white/50">
+                  <span className="min-w-0 flex-1 truncate text-fg/50">
                     {formatDescriptor(e.desc, lang)}
                   </span>
                   <span className="shrink-0 font-bold tabular-nums text-emerald-400">
@@ -560,7 +560,7 @@ function MessageForm({ onApply }: { onApply: ApplyFn }) {
   return (
     <div>
       <NumberField label={t.points} value={points} onChange={setPoints} min={0} />
-      <p className="mt-1 text-xs text-white/40">{t.messageHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.messageHint}</p>
       <ApplyBar
         amount={scoreMessage(points)}
         desc={{ kind: 'message', points }}
@@ -593,7 +593,7 @@ function CircusForm({ onApply }: { onApply: ApplyFn }) {
             className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-bold transition ${
               animal === a
                 ? 'bg-amber-500 text-gray-900'
-                : 'bg-white/5 text-white/70 hover:bg-white/10'
+                : 'bg-overlay/5 text-fg/70 hover:bg-overlay/10'
             }`}
           >
             <span className="text-xl leading-none">{ANIMAL_EMOJI[a]}</span>
@@ -602,7 +602,7 @@ function CircusForm({ onApply }: { onApply: ApplyFn }) {
         ))}
       </div>
       <NumberField label={t.meeples} value={meeples} onChange={setMeeples} min={1} />
-      <p className="mt-1 text-xs text-white/40">{t.circusHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.circusHint}</p>
       <ApplyBar
         amount={scoreCircus(animal, meeples)}
         desc={{ kind: 'circus', animal, meeples }}
@@ -618,7 +618,7 @@ function AcrobatsForm({ onApply }: { onApply: ApplyFn }) {
   return (
     <div>
       <NumberField label={t.acrobatsCount} value={count} onChange={setCount} min={1} />
-      <p className="mt-1 text-xs text-white/40">{t.acrobatsHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.acrobatsHint}</p>
       <ApplyBar
         amount={scoreAcrobats(count)}
         desc={{ kind: 'acrobats', count }}
@@ -639,7 +639,7 @@ function RingmasterForm({ onApply }: { onApply: ApplyFn }) {
         onChange={setTiles}
         min={0}
       />
-      <p className="mt-1 text-xs text-white/40">{t.ringmasterHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.ringmasterHint}</p>
       <ApplyBar
         amount={scoreRingmaster(tiles)}
         desc={{ kind: 'ringmaster', tiles }}
@@ -669,7 +669,7 @@ function FairyForm({ onApply }: { onApply: ApplyFn }) {
           </button>
         ))}
       </div>
-      <p className="mt-3 text-xs text-white/40">{t.fairyHint}</p>
+      <p className="mt-3 text-xs text-fg/40">{t.fairyHint}</p>
     </div>
   )
 }
@@ -700,12 +700,12 @@ function GoodsForm({
         </>
       )}
       {tradersBuilders && goldMines && (
-        <div className="my-2 border-t border-white/10" />
+        <div className="my-2 border-t border-line/10" />
       )}
       {goldMines && (
         <NumberField label={`${FEATURE_EMOJI.gold} ${t.goldIngots}`} value={gold} onChange={setGold} />
       )}
-      <p className="mt-1 text-xs text-white/40">{t.goodsTabHint}</p>
+      <p className="mt-1 text-xs text-fg/40">{t.goodsTabHint}</p>
       <button
         disabled={total === 0}
         onClick={() => onRecord({ wine, grain, cloth, gold })}
@@ -737,7 +737,7 @@ function ManualForm({ onApply }: { onApply: ApplyFn }) {
             key={q}
             onClick={() => setAmount(q)}
             className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-              amount === q ? 'bg-amber-500 text-gray-900' : 'bg-white/10 hover:bg-white/20'
+              amount === q ? 'bg-amber-500 text-gray-900' : 'bg-overlay/10 hover:bg-overlay/20'
             }`}
           >
             {q}
