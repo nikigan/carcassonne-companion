@@ -54,15 +54,19 @@ messageQualifies(amount, total) =
   amount > 0 && (amount % 5 === 0 || total % 5 === 0)
 ```
 
-It watches `state.log` and runs on **any** points source (features, trade goods, gold,
-manual), all of which move a figure. Entry ids are tracked in a `Set` so multiplayer's
-optimistic-then-reconciled echo of the same id cannot double-fire; initial load and
-snapshot-resync are seeded as history and never alert.
+It watches `state.log`. **Trade goods and gold are excluded** — they're tallied in one
+batch *after* play ends (the menu's "Score …" actions), so they never move a figure
+during the game and must not draw a message. The pure predicate
+`kindCanTriggerMessage(kind)` (also in `messageTrigger.ts`, unit-tested) encodes this as
+an exclude-list (`gold`, `goodsBonus`), so any future in-play feature triggers by
+default. Entry ids are tracked in a `Set` so multiplayer's optimistic-then-reconciled
+echo of the same id cannot double-fire; initial load and snapshot-resync are seeded as
+history and never alert.
 
-**Discrete scores** (features, goods, gold, message tiles) are judged the moment a
-single new entry is prepended, against `messageQualifies(entry.amount, player.score)`.
-A message tile's own points are a new score and can chain into another message — exactly
-as the rules allow.
+**Discrete in-play scores** (features, message tiles) are judged the moment a single new
+entry is prepended, against `messageQualifies(entry.amount, player.score)`. A message
+tile's own points are a new score and can chain into another message — exactly as the
+rules allow.
 
 **Manual points** need a debounce. The reducer coalesces a rapid manual burst into one
 log entry within `MANUAL_MERGE_WINDOW` (3 s) — the entry's `amount` is the running net —
@@ -192,6 +196,7 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
 
 ## Edge cases
 
+- Trade goods (`goodsBonus`) and gold (`gold`) are end-of-game tallies → never trigger.
 - `amount === 0` never reaches the hook (`addScore` rejects it) and is excluded anyway.
 - Negative amounts / a manual burst netting ≤ 0 do not trigger (`amount > 0`).
 - Incremental ±1 manual taps that graze a multiple of 5 mid-burst do **not** misfire —
@@ -219,4 +224,6 @@ clearing is local UI per client. The id `Set` dedupes the optimistic→reconcile
   badge/toast still appear; reduced-motion → no pulse.
 - Manual debounce: rapidly tap +1 from 19→22 (passes 20) → **no** alert; tap +1 from
   10→15 (net 5) → alert fires once the taps settle (~3.3 s). Verified live in-browser.
+- End-game tallies: record gold, then "Score gold" landing a player on a multiple of 5
+  (e.g. 15→25) → **no** alert. Verified live in-browser.
 ```
