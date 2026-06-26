@@ -188,6 +188,12 @@ export interface Strings {
   messageDismissAria: (name: string) => string
   soundLabel: string
 
+  // Theme toggle
+  themeLight: string
+  themeDark: string
+  themeSystem: string
+  themeToggleAria: (current: string) => string
+
   // PWA update prompt
   updateAvailable: string
   refresh: string
@@ -371,6 +377,11 @@ const en: Strings = {
   messageBadgeAria: (name) => `${name} — open message`,
   messageDismissAria: (name) => `${name} — dismiss message`,
   soundLabel: 'Sound',
+
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  themeSystem: 'System',
+  themeToggleAria: (current) => `Theme: ${current}. Tap to switch.`,
 
   updateAvailable: 'A new version is available.',
   refresh: 'Refresh',
@@ -559,6 +570,11 @@ const ru: Strings = {
   messageBadgeAria: (name) => `${name} — открыть послание`,
   messageDismissAria: (name) => `${name} — убрать послание`,
   soundLabel: 'Звук',
+
+  themeLight: 'Светлая',
+  themeDark: 'Тёмная',
+  themeSystem: 'Системная',
+  themeToggleAria: (current) => `Тема: ${current}. Нажмите, чтобы сменить.`,
 
   updateAvailable: 'Доступно обновление.',
   refresh: 'Обновить',
