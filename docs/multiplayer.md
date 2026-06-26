@@ -1,4 +1,14 @@
-# Adding multiplayer (future)
+# Multiplayer rooms
+
+> **Implemented — shipped 2026-06.**
+> See the design spec at
+> `docs/superpowers/specs/2026-06-26-multiplayer-rooms-design.md` and the real
+> implementation in `src/game/` (`reducer.ts`, `protocol.ts`, `roomSync.ts`,
+> `roomConnection.ts`) and `src/server/index.ts`.
+> The sections below are the original design notes — still useful as rationale
+> and architectural record.
+
+---
 
 This app is currently a **single-device** score tracker: state lives in one
 browser via `localStorage` (`src/useGame.ts`). "Multiplayer" here means **one
@@ -6,9 +16,9 @@ shared game session synced live across several devices** — each player opens t
 app, joins the same room, and everyone sees the scoreboard and score log update
 in real time as anyone records points.
 
-Nothing below is built yet. The deployment was chosen (Cloudflare **Worker with
-Static Assets**, see `wrangler.jsonc`) so all of this is a purely **additive**
-step — no re-platforming.
+The deployment was chosen (Cloudflare **Worker with Static Assets**, see
+`wrangler.jsonc`) so all of this was a purely **additive** step — no
+re-platforming.
 
 > ⚠️ Cloudflare APIs move fast. Treat the code here as a sketch and verify exact
 > signatures against the current docs when you implement (per repo policy of

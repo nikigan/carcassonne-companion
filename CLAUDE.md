@@ -5,8 +5,9 @@ Guidance for working in this repository.
 ## What this is
 
 A mobile-first web **companion app for the board game Carcassonne** that tracks
-each player's score. Pure client-side SPA — no backend, no accounts. The current
-game persists to `localStorage`. Bilingual (English / Russian).
+each player's score. Solo play is a pure client-side SPA — no accounts, state in
+`localStorage`. Multiplayer rooms (shipped 2026-06) add an optional Cloudflare
+Worker + Durable Object layer; solo remains the default. Bilingual (English / Russian).
 
 ## Stack & commands
 
@@ -104,10 +105,22 @@ Deployed to **Cloudflare Workers (Static Assets)**. Live at
   on push to `main` (build `npm run build`, deploy `npx wrangler deploy`). Manual
   deploys: `npm run deploy` (runs the build, then `wrangler deploy`).
 
-**Future server (multiplayer):** add a `main` entry + bindings (e.g. Durable
-Objects, WebSockets) to the same `wrangler.jsonc` / Worker — no re-platforming.
-Architecture, code sketches, and a phased rollout live in
-[`docs/multiplayer.md`](docs/multiplayer.md).
+## Multiplayer
+
+Shipped 2026-06. One Cloudflare **Durable Object** (`GameRoom`) per 6-char room
+code holds the authoritative `GameState` over a WebSocket (Hibernation API, SQLite
+persistence). A pure `applyAction(state, action)` reducer in `src/game/reducer.ts`
+is shared by the React client AND the Worker (`src/server/index.ts`), which routes
+`/api/room/<code>` to the DO and falls through to static assets for everything
+else. Clients update optimistically (confirmed-base + pending replay,
+`src/game/roomSync.ts`) and reconcile on the server echo. Rooms are seeded from
+the current local game; join by `/r/<code>` URL, QR of that URL, or 6-char code.
+Per-room state caches in `localStorage`; auto-reconnect with snapshot resync. Solo
+(no-room) play is unchanged and remains the default. `npm run dev` runs the client
++ DO together via `@cloudflare/vite-plugin`.
+
+Design spec: `docs/superpowers/specs/2026-06-26-multiplayer-rooms-design.md`.
+Rationale and architecture notes: [`docs/multiplayer.md`](docs/multiplayer.md).
 
 ## Git
 
