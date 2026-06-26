@@ -5,6 +5,7 @@ import { PlayerSetup } from './components/PlayerSetup'
 import { Scoreboard } from './components/Scoreboard'
 import { ExpansionPicker } from './components/ExpansionPicker'
 import { RoomPanel } from './components/RoomPanel'
+import { UpdatePrompt } from './components/UpdatePrompt'
 
 export default function App() {
   const { t, lang, setLang } = useI18n()
@@ -223,6 +224,8 @@ export default function App() {
           {t.leads(leader.name, leader.score)}
         </footer>
       )}
+
+      <UpdatePrompt />
     </div>
   )
 }

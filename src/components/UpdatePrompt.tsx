@@ -1,0 +1,42 @@
+import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useI18n } from '../i18n'
+
+/**
+ * Bottom toast shown when a new app version has been precached. We use
+ * registerType 'prompt', so nothing reloads until the user taps Refresh.
+ */
+export function UpdatePrompt() {
+  const { t } = useI18n()
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW()
+
+  if (!needRefresh) return null
+
+  return (
+    <div
+      role="status"
+      className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+    >
+      <div className="flex w-full max-w-md items-center justify-between gap-3 rounded-xl border border-white/10 bg-gray-800 px-4 py-3 shadow-2xl">
+        <span className="text-sm text-white/90">{t.updateAvailable}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => updateServiceWorker(true)}
+            className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/25"
+          >
+            {t.refresh}
+          </button>
+          <button
+            onClick={() => setNeedRefresh(false)}
+            className="rounded-lg px-2 py-1.5 text-sm text-white/50 hover:bg-white/10"
+            aria-label={t.close}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

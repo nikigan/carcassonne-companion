@@ -171,6 +171,9 @@ export interface Strings {
   statusConnecting: string
   statusConnected: string
   statusReconnecting: string
+  // PWA update prompt
+  updateAvailable: string
+  refresh: string
 }
 
 const en: Strings = {
@@ -333,6 +336,9 @@ const en: Strings = {
   statusConnecting: 'Connecting…',
   statusConnected: 'Live',
   statusReconnecting: 'Reconnecting…',
+
+  updateAvailable: 'A new version is available.',
+  refresh: 'Refresh',
 }
 
 // Russian uses the official Carcassonne (Hobby World) rule terms:
@@ -500,6 +506,9 @@ const ru: Strings = {
   statusConnecting: 'Подключение…',
   statusConnected: 'В сети',
   statusReconnecting: 'Переподключение…',
+
+  updateAvailable: 'Доступно обновление.',
+  refresh: 'Обновить',
 }
 
 const TABLES: Record<Lang, Strings> = { en, ru }
