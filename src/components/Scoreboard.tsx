@@ -120,8 +120,8 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
     }))
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 pb-10 pt-4">
-      <div className="space-y-2.5">
+    <div className="mx-auto w-full max-w-md px-4 pb-10 pt-4 md:max-w-5xl md:grid md:grid-cols-2 md:items-start md:gap-6">
+      <div className="space-y-2.5 md:sticky md:top-[calc(var(--app-header-h,4.5rem)_+_1rem)]">
         {orderedPlayers.map((p, i) => {
           const isLeader = p.score === leadScore && leadScore > 0
           return (
@@ -179,7 +179,7 @@ export function Scoreboard({ state, onScore, onRecordTokens, onUndo }: Props) {
         })}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 md:mt-0">
         <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-white/40">
           {t.scoreLog}
         </h3>

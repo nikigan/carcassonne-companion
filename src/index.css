@@ -10,6 +10,12 @@ body,
   height: 100%;
 }
 
+/* Paint the page canvas to match the app so the bottom safe-area strip and any
+   overscroll show the app's dark surface instead of a black band (iOS PWA). */
+html {
+  @apply bg-gray-900;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,

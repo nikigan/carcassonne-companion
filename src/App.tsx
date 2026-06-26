@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { useGame } from './useGame'
 import { LANGUAGES, useI18n } from './i18n'
 import { PlayerSetup } from './components/PlayerSetup'
@@ -15,15 +15,36 @@ export default function App() {
   const [expansionsOpen, setExpansionsOpen] = useState(false)
   const [roomPanelOpen, setRoomPanelOpen] = useState(false)
 
+  // Measure the sticky header so the tablet two-column layout can offset the
+  // sticky players column by exactly its height (it varies with the top
+  // safe-area inset). Exposed as the CSS var `--app-header-h` on the root.
+  const headerRef = useRef<HTMLElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  useLayoutEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const measure = () => setHeaderHeight(el.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const leader =
     state.started && state.players.length
       ? [...state.players].sort((a, b) => b.score - a.score)[0]
       : null
 
   return (
-    <div className="min-h-full bg-gray-900 text-white">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-gray-900/90 pt-[env(safe-area-inset-top)] backdrop-blur">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-3">
+    <div
+      className="min-h-dvh bg-gray-900 text-white"
+      style={{ '--app-header-h': `${headerHeight}px` } as CSSProperties}
+    >
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-20 border-b border-white/10 bg-gray-900/90 pt-[env(safe-area-inset-top)] backdrop-blur"
+      >
+        <div className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-3 md:max-w-5xl">
           <div className="flex items-center gap-2">
             <span className="text-xl" aria-hidden>
               🏰
