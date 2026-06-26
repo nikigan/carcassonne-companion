@@ -22,6 +22,7 @@ export default defineConfig({
         description:
           "A web companion app for the board game Carcassonne to track each player's score.",
         lang: 'en',
+        id: '/',
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -32,6 +33,11 @@ export default defineConfig({
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: 'pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        // Android-only: let Chrome route in-scope `/r/<code>` links into the
+        // installed PWA (gated by the user's "Open supported links" setting).
+        // Ignored everywhere it isn't supported (including all of iOS).
+        launch_handler: { client_mode: ['navigate-existing', 'auto'] },
+        handle_links: 'preferred',
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
