@@ -189,7 +189,9 @@ export interface Strings {
   messageDismissAria: (name: string) => string
   soundLabel: string
 
-  // Theme toggle
+  // Appearance settings (in the header menu)
+  languageLabel: string
+  themeLabel: string
   themeLight: string
   themeDark: string
   themeSystem: string
@@ -380,6 +382,8 @@ const en: Strings = {
   messageDismissAria: (name) => `${name} — dismiss message`,
   soundLabel: 'Sound',
 
+  languageLabel: 'Language',
+  themeLabel: 'Theme',
   themeLight: 'Light',
   themeDark: 'Dark',
   themeSystem: 'System',
@@ -574,6 +578,8 @@ const ru: Strings = {
   messageDismissAria: (name) => `${name} — убрать послание`,
   soundLabel: 'Звук',
 
+  languageLabel: 'Язык',
+  themeLabel: 'Тема',
   themeLight: 'Светлая',
   themeDark: 'Тёмная',
   themeSystem: 'Системная',

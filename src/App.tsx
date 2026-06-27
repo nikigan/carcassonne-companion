@@ -1,7 +1,14 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useGame } from './useGame'
 import { LANGUAGES, useI18n } from './i18n'
-import { useTheme } from './theme'
+import { useTheme, type ThemeChoice } from './theme'
 import { PlayerSetup } from './components/PlayerSetup'
 import { Scoreboard } from './components/Scoreboard'
 import { ExpansionPicker } from './components/ExpansionPicker'
@@ -10,7 +17,7 @@ import { UpdatePrompt } from './components/UpdatePrompt'
 import { useMessageAlerts } from './useMessageAlerts'
 
 export default function App() {
-  const { t, lang, setLang } = useI18n()
+  const { t } = useI18n()
   const game = useGame()
   const { state, room } = game
   const alerts = useMessageAlerts(state, game.syncEpoch, {
@@ -89,25 +96,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex rounded-lg bg-overlay/5 p-0.5 text-xs font-semibold">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`rounded-md px-2 py-1 transition ${
-                    lang === l.code
-                      ? 'bg-overlay/15 text-fg'
-                      : 'text-fg/50 hover:text-fg/80'
-                  }`}
-                  aria-pressed={lang === l.code}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
-
-            <ThemeToggle />
-
             {room && (
               <button
                 onClick={() => setRoomPanelOpen(true)}
@@ -119,16 +107,20 @@ export default function App() {
               </button>
             )}
 
-            {state.started && (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setMenuOpen((o) => !o)}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-fg/80 hover:bg-overlay/10"
-                >
-                  {t.menu} ▾
-                </button>
-                {menuOpen && (
-                    <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-line/10 bg-surface shadow-xl">
+            {/* The menu is always available. Before the game starts it carries
+                only appearance settings (language + theme); once playing it also
+                holds the game actions. */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="rounded-lg px-3 py-2 text-sm font-medium text-fg/80 hover:bg-overlay/10"
+              >
+                {t.menu} ▾
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-xl border border-line/10 bg-surface shadow-xl">
+                  {state.started && (
+                    <>
                       {!room ? (
                         <MenuItem
                           label={`${t.shareGame} 🔗`}
@@ -205,10 +197,13 @@ export default function App() {
                           />
                         </>
                       )}
-                    </div>
-                )}
-              </div>
-            )}
+                      <div className="border-t border-line/10" />
+                    </>
+                  )}
+                  <MenuAppearance />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -309,24 +304,91 @@ function MessageToast({ show, text }: { show: boolean; text: string }) {
   )
 }
 
-function ThemeToggle() {
-  const { t } = useI18n()
-  const { theme, cycle } = useTheme()
-  const icon = theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '🖥️'
-  const label =
-    theme === 'light'
-      ? t.themeLight
-      : theme === 'dark'
-        ? t.themeDark
-        : t.themeSystem
+/**
+ * Appearance settings rendered inside the header menu: a language picker and a
+ * theme picker, each a small segmented control. Tapping a swatch deliberately
+ * leaves the menu open (the outside-click closer ignores in-menu clicks) so a
+ * player can flip both without reopening.
+ */
+function MenuAppearance() {
+  const { t, lang, setLang } = useI18n()
+  const { theme, setTheme } = useTheme()
+  const themes: { value: ThemeChoice; icon: string; label: string }[] = [
+    { value: 'light', icon: '☀️', label: t.themeLight },
+    { value: 'dark', icon: '🌙', label: t.themeDark },
+    { value: 'system', icon: '🖥️', label: t.themeSystem },
+  ]
+  return (
+    <>
+      <SettingRow label={t.languageLabel}>
+        {LANGUAGES.map((l) => (
+          <SegButton
+            key={l.code}
+            active={lang === l.code}
+            onClick={() => setLang(l.code)}
+          >
+            {l.label}
+          </SegButton>
+        ))}
+      </SettingRow>
+      <SettingRow label={t.themeLabel}>
+        {themes.map((o) => (
+          <SegButton
+            key={o.value}
+            active={theme === o.value}
+            onClick={() => setTheme(o.value)}
+            ariaLabel={o.label}
+            title={o.label}
+          >
+            <span aria-hidden>{o.icon}</span>
+          </SegButton>
+        ))}
+      </SettingRow>
+    </>
+  )
+}
+
+function SettingRow({
+  label,
+  children,
+}: {
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+      <span className="text-sm text-fg/90">{label}</span>
+      <div className="flex shrink-0 rounded-lg bg-overlay/5 p-0.5 text-xs font-semibold">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function SegButton({
+  active,
+  onClick,
+  ariaLabel,
+  title,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  ariaLabel?: string
+  title?: string
+  children: ReactNode
+}) {
   return (
     <button
-      onClick={cycle}
-      className="flex h-8 w-8 items-center justify-center rounded-lg bg-overlay/5 text-base leading-none transition hover:bg-overlay/10"
-      aria-label={t.themeToggleAria(label)}
-      title={label}
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={ariaLabel}
+      title={title}
+      className={`rounded-md px-2 py-1 transition ${
+        active ? 'bg-overlay/15 text-fg' : 'text-fg/50 hover:text-fg/80'
+      }`}
     >
-      <span aria-hidden>{icon}</span>
+      {children}
     </button>
   )
 }
