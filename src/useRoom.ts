@@ -22,6 +22,13 @@ export interface UseRoom {
   leaveRoom: () => void
   /** In a room: optimistically apply + send the action, return true. Else return false. */
   dispatchInRoom: (action: GameAction) => boolean
+  /**
+   * Bumped on every wholesale displayed-state replacement (snapshot, join,
+   * create, leave) — i.e. whenever the score log changes without being an
+   * in-play move. Lets the message-alert detector reseed its "seen" set so a
+   * resync never replays historical 📜 notifications.
+   */
+  syncEpoch: number
 }
 
 export interface UseRoomOptions {
@@ -50,6 +57,10 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
   // state) so the socket callbacks — which fire outside React's render — always
   // read the current values without re-binding.
   const [room, setRoom] = useState<RoomInfo | null>(null)
+  // Bumped whenever the displayed state is replaced wholesale (not an in-play
+  // move): each snapshot, plus join/create/leave. See UseRoom.syncEpoch.
+  const [syncEpoch, setSyncEpoch] = useState(0)
+  const bumpSyncEpoch = useCallback(() => setSyncEpoch((n) => n + 1), [])
   const syncRef = useRef<RoomSyncState | null>(null)
   const connRef = useRef<RoomConnection | null>(null)
   // The host token for the current room (the creator's secret). Null when we're
@@ -76,6 +87,9 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
         for (const p of syncRef.current.pending) {
           conn.send({ type: 'action', actionId: p.actionId, action: p.action, hostToken: hostTokenRef.current ?? undefined })
         }
+        // A snapshot is a wholesale base replacement — reseed message alerts so
+        // none of its history fires a notification.
+        bumpSyncEpoch()
         pushDisplayed()
       },
       onAction: (msg) => {
@@ -90,7 +104,7 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
       onStatus: (status) => setRoom((r) => (r ? { ...r, status } : r)),
     })
     connRef.current = conn
-  }, [pushDisplayed])
+  }, [pushDisplayed, bumpSyncEpoch])
 
   // In a room, apply the action optimistically through the sync machine, paint
   // it immediately, and send it over the socket — the server echo reconciles it
@@ -146,11 +160,12 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
     hostTokenRef.current = token
     syncRef.current = initialSync(cached ?? optsRef.current.getState(), 0)
     optsRef.current.setDisplayed(displayedState(syncRef.current))
+    bumpSyncEpoch() // adopting a placeholder base is a wholesale replacement
     saveActiveRoom(code)
     history.pushState(null, '', roomPath(code))
     setRoom({ code, status: 'connecting', isHost: token !== null })
     openConnection(code)
-  }, [openConnection])
+  }, [openConnection, bumpSyncEpoch])
 
   const leaveRoom = useCallback(() => {
     connRef.current?.close()
@@ -164,7 +179,8 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
     setRoom(null)
     history.pushState(null, '', '/')
     optsRef.current.setDisplayed(loadGame()) // restore the untouched solo game
-  }, [room])
+    bumpSyncEpoch() // swapping back to the solo game is a wholesale replacement
+  }, [room, bumpSyncEpoch])
 
   // Auto-join from the URL (/r/<code>) or the remembered active room, once on
   // mount. The ref guards against StrictMode's double-invoke opening two sockets.
@@ -176,5 +192,5 @@ export function useRoom(opts: UseRoomOptions): UseRoom {
     if (code) joinRoom(code)
   }, [joinRoom])
 
-  return { room, createRoom, joinRoom, leaveRoom, dispatchInRoom }
+  return { room, createRoom, joinRoom, leaveRoom, dispatchInRoom, syncEpoch }
 }

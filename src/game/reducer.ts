@@ -9,7 +9,7 @@ import { GOODS_MAJORITY_BONUS, scoreGold } from '../scoring'
 /** Fresh empty game (base game only). Lives here so the pure reducer and the
  *  browser-only storage layer can both use it without a circular import. */
 export const emptyGame: GameState = {
-  players: [], log: [], started: false, expansions: BASE_ONLY,
+  players: [], log: [], started: false, expansions: BASE_ONLY, pendingMessages: [],
 }
 
 const GOOD_TYPES: GoodType[] = ['wine', 'grain', 'cloth']
@@ -36,6 +36,13 @@ export type GameAction =
   | { type: 'undoEntry'; entryId: string }
   | { type: 'resetScores' }
   | { type: 'newGame' }
+  // The Messengers (📜). The badge set is synced state; these mutate it.
+  // `earnMessage` is dispatched by every client that detects an in-play
+  // message, so it's idempotent. `resolveMessages` fires when a player draws
+  // the tile (clears all); `dismissMessage` removes one player's badge.
+  | { type: 'earnMessage'; playerId: string }
+  | { type: 'dismissMessage'; playerId: string }
+  | { type: 'resolveMessages' }
 
 function applyManual(
   s: GameState, playerId: string, amount: number, now: number, newId: string,
@@ -73,13 +80,20 @@ export function applyAction(s: GameState, action: GameAction): GameState {
         ...s,
         players: s.players.filter((p) => p.id !== action.id),
         log: s.log.filter((e) => e.playerId !== action.id),
+        pendingMessages: (s.pendingMessages ?? []).filter((id) => id !== action.id),
       }
     case 'startGame':
       return s.players.length > 0 ? { ...s, started: true } : s
     case 'editPlayers':
       return { ...s, started: false }
-    case 'setExpansion':
-      return { ...s, expansions: { ...s.expansions, [action.expansion]: action.on } }
+    case 'setExpansion': {
+      const expansions = { ...s.expansions, [action.expansion]: action.on }
+      // Turning The Messages off clears any unresolved 📜 badges.
+      if (action.expansion === 'messages' && !action.on) {
+        return { ...s, expansions, pendingMessages: [] }
+      }
+      return { ...s, expansions }
+    }
     case 'addScore': {
       if (!Number.isFinite(action.amount) || action.amount === 0) return s
       if (action.desc.kind === 'manual') {
@@ -161,9 +175,24 @@ export function applyAction(s: GameState, action: GameAction): GameState {
         ...s,
         players: s.players.map((p) => ({ ...p, score: 0, goods: emptyGoods(), gold: 0 })),
         log: [],
+        pendingMessages: [],
       }
     case 'newGame':
       return { ...emptyGame, expansions: s.expansions }
+    case 'earnMessage': {
+      const pending = s.pendingMessages ?? []
+      return pending.includes(action.playerId)
+        ? s
+        : { ...s, pendingMessages: [...pending, action.playerId] }
+    }
+    case 'dismissMessage': {
+      const pending = s.pendingMessages ?? []
+      return pending.includes(action.playerId)
+        ? { ...s, pendingMessages: pending.filter((id) => id !== action.playerId) }
+        : s
+    }
+    case 'resolveMessages':
+      return (s.pendingMessages ?? []).length ? { ...s, pendingMessages: [] } : s
     default:
       // Exhaustiveness: adding a GameAction variant without a case makes
       // `action` non-`never` here and fails the build (no unused local, so

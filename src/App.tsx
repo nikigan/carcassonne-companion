@@ -13,7 +13,11 @@ export default function App() {
   const { t, lang, setLang } = useI18n()
   const game = useGame()
   const { state, room } = game
-  const alerts = useMessageAlerts(state)
+  const alerts = useMessageAlerts(state, game.syncEpoch, {
+    earnMessage: game.earnMessage,
+    dismissMessage: game.dismissMessage,
+    resolveMessages: game.resolveMessages,
+  })
   const [menuOpen, setMenuOpen] = useState(false)
   const [expansionsOpen, setExpansionsOpen] = useState(false)
   const [roomPanelOpen, setRoomPanelOpen] = useState(false)
@@ -184,10 +188,9 @@ export default function App() {
                           <MenuItem
                             label={t.resetScores}
                             onClick={() => {
-                              if (confirm(t.confirmReset)) {
-                                game.resetScores()
-                                alerts.clear()
-                              }
+                              // resetScores / newGame clear pendingMessages in
+                              // the reducer (synced), so no local clear needed.
+                              if (confirm(t.confirmReset)) game.resetScores()
                               setMenuOpen(false)
                             }}
                           />
@@ -195,10 +198,7 @@ export default function App() {
                             label={t.newGame}
                             danger
                             onClick={() => {
-                              if (confirm(t.confirmNewGame)) {
-                                game.newGame()
-                                alerts.clear()
-                              }
+                              if (confirm(t.confirmNewGame)) game.newGame()
                               setMenuOpen(false)
                             }}
                           />

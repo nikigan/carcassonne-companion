@@ -92,4 +92,11 @@ export interface GameState {
   started: boolean
   /** Which expansions are active — gates the scoring UI. */
   expansions: ExpansionConfig
+  /**
+   * Player ids with an unresolved 📜 message (The Messengers). Part of the
+   * synced state so badges stay consistent across a room — a late joiner sees
+   * the currently-pending ones, and a dismiss/resolve propagates to everyone.
+   * Pre-dates the field on old saves / rooms, so always read it as `?? []`.
+   */
+  pendingMessages: string[]
 }

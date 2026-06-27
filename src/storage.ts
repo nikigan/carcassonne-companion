@@ -20,6 +20,8 @@ export function loadGame(): GameState {
       // Saves predating the expansion config had every feature available, so
       // default a missing config to all-on to preserve that game's UI.
       expansions: normalizeConfig(parsed.expansions, ALL_ON),
+      // The 📜 badge set predates older saves; default to none pending.
+      pendingMessages: Array.isArray(parsed.pendingMessages) ? parsed.pendingMessages : [],
     }
   } catch {
     return emptyGame

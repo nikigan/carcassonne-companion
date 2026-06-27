@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { GameState, ScoreEntry } from './types'
 import { MANUAL_MERGE_WINDOW } from './game/reducer'
 import { kindCanTriggerMessage, messageQualifies } from './messageTrigger'
@@ -23,14 +23,24 @@ function loadSoundPref(): boolean {
   }
 }
 
+/** The synced-state mutators the alert hook drives (from useGame). */
+export interface MessageActions {
+  /** Mark a player as having earned a 📜 — synced so everyone shows the badge. */
+  earnMessage: (playerId: string) => void
+  /** Remove ONE player's badge — they crossed a ÷5 on someone else's turn. */
+  dismissMessage: (playerId: string) => void
+  /** Clear ALL badges — a message was resolved (only the active player draws). */
+  resolveMessages: () => void
+}
+
 export interface MessageAlerts {
-  /** Player ids currently showing a 📜 badge. */
+  /** Player ids currently showing a 📜 badge (mirrors `state.pendingMessages`). */
   pending: Set<string>
   /** Bumped on each qualifying score; drives the attention toast. */
   toast: { id: number } | null
-  /** Clear ALL badges — a message was resolved (only the active player draws). */
+  /** Resolve the message moment — clears every badge for everyone. */
   clear: () => void
-  /** Remove ONE player's badge — they crossed a ÷5 on someone else's turn. */
+  /** Dismiss one player's badge for everyone. */
   dismiss: (id: string) => void
   soundOn: boolean
   setSoundOn: (on: boolean) => void
@@ -42,26 +52,45 @@ export interface MessageAlerts {
  * meeple" routing this collapses to {@link messageQualifies} — a single check
  * against the points scored and the player's running total.
  *
- * Discrete scores (features, goods, gold, message tiles) are judged the moment
- * they're logged. Manual points are judged on their *settled net* — the
- * coalesced entry's final `amount` once {@link MANUAL_SETTLE} passes — so
- * incremental ±1 nudges that graze a multiple of 5 don't misfire.
+ * The *badge set* lives in synced GameState (`state.pendingMessages`) so it's
+ * consistent across a room and a dismiss/resolve propagates to everyone. This
+ * hook is the **detector + notifier**: it watches the score log, and on a
+ * genuine in-play qualifying score it chimes/toasts locally AND calls
+ * {@link MessageActions.earnMessage} to record the badge for the whole room
+ * (idempotent — every connected client detects the same move).
  *
- * Ephemeral UI state — not part of GameState/localStorage. De-dupes by entry id
- * so multiplayer's optimistic→reconciled echo can't double-fire, and ignores
- * initial load / room-resync so it never alerts for history.
+ * Discrete scores (features, goods, gold, message tiles) are judged the moment
+ * they're logged. Manual points are judged on their *settled net*. De-dupes by
+ * entry id so multiplayer's optimistic→reconciled echo can't double-fire, and
+ * reseeds (without firing) on first load and on every `syncEpoch` bump — a room
+ * snapshot / join / leave — so a resync never replays historical notifications.
  */
-export function useMessageAlerts(state: GameState): MessageAlerts {
-  const [pending, setPending] = useState<Set<string>>(() => new Set())
+export function useMessageAlerts(
+  state: GameState,
+  syncEpoch: number,
+  actions: MessageActions,
+): MessageAlerts {
   const [toast, setToast] = useState<{ id: number } | null>(null)
   const [soundOn, setSoundOnState] = useState<boolean>(loadSoundPref)
+
+  // Badges are a pure projection of synced state; memoize so the Set identity is
+  // stable across renders that don't touch the pending list.
+  const pending = useMemo(
+    () => new Set(state.pendingMessages ?? []),
+    [state.pendingMessages],
+  )
 
   const seen = useRef<Set<string>>(new Set())
   const prevLen = useRef(0)
   const init = useRef(false)
+  const epochRef = useRef(syncEpoch)
   const toastSeq = useRef(0)
   const soundRef = useRef(soundOn)
   soundRef.current = soundOn
+
+  // Latest mutators, read inside callbacks/timers without re-binding them.
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
 
   // Latest log + players, read inside debounce timers for up-to-date values.
   const logRef = useRef<ScoreEntry[]>(state.log)
@@ -77,12 +106,10 @@ export function useMessageAlerts(state: GameState): MessageAlerts {
 
   const enabled = state.expansions.messages
 
+  // A genuine in-play message: record the badge for the room (idempotent) and
+  // notify locally. Every connected client runs this for the same move.
   const fire = useCallback((playerId: string) => {
-    setPending((prev) => {
-      const next = new Set(prev)
-      next.add(playerId)
-      return next
-    })
+    actionsRef.current.earnMessage(playerId)
     toastSeq.current += 1
     setToast({ id: toastSeq.current })
     if (soundRef.current) playMessageChime()
@@ -91,13 +118,21 @@ export function useMessageAlerts(state: GameState): MessageAlerts {
   useEffect(() => {
     const log = state.log
 
-    // First run: remember existing entries, never alert for history.
-    if (!init.current) {
+    // First run, or a wholesale base replacement (room snapshot / join / leave,
+    // signalled by a `syncEpoch` bump): adopt the current log as already-seen
+    // history and never alert for it. This is the fix for a new joiner getting
+    // a burst of notifications for messages earned before they connected.
+    if (!init.current || epochRef.current !== syncEpoch) {
       init.current = true
+      epochRef.current = syncEpoch
       seen.current = new Set(log.map((e) => e.id))
+      manualAmt.current = new Map()
       log.forEach((e) => {
         if (e.desc.kind === 'manual') manualAmt.current.set(e.id, e.amount)
       })
+      // Cancel any settle timers armed against the previous base.
+      manualTimers.current.forEach((t) => clearTimeout(t))
+      manualTimers.current.clear()
       prevLen.current = log.length
       return
     }
@@ -160,7 +195,7 @@ export function useMessageAlerts(state: GameState): MessageAlerts {
     })
 
     seen.current = live
-  }, [state.log, state.players, enabled, fire])
+  }, [state.log, state.players, enabled, fire, syncEpoch])
 
   // Auto-dismiss the toast a few seconds after the latest trigger.
   useEffect(() => {
@@ -179,23 +214,16 @@ export function useMessageAlerts(state: GameState): MessageAlerts {
   }, [])
 
   const clear = useCallback(() => {
-    // A reset / new game / resolved message also abandons any in-flight burst.
-    // Keep `manualAmt` though: it records already-seen nets, so a still-logged
-    // settled entry isn't mistaken for new and re-armed. Pruning drops vanished
-    // ids after a reset.
+    // A player drew the message tile: resolve it for everyone, and abandon any
+    // in-flight manual burst locally. (reset / new game clear the synced set via
+    // the reducer, so they don't route through here.)
     manualTimers.current.forEach((t) => clearTimeout(t))
     manualTimers.current.clear()
-    setPending((prev) => (prev.size ? new Set() : prev))
+    actionsRef.current.resolveMessages()
   }, [])
 
   const dismiss = useCallback(
-    (id: string) =>
-      setPending((prev) => {
-        if (!prev.has(id)) return prev
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      }),
+    (id: string) => actionsRef.current.dismissMessage(id),
     [],
   )
 

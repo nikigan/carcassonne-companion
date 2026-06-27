@@ -72,14 +72,26 @@ export function useGame() {
   const resetScores = useCallback(() => dispatch({ type: 'resetScores' }), [dispatch])
   const newGame = useCallback(() => dispatch({ type: 'newGame' }), [dispatch])
 
+  // The Messengers (📜). `earnMessage` is dispatched by useMessageAlerts when a
+  // client detects an in-play message; `resolveMessages`/`dismissMessage` back
+  // the badge tap and the ✕. All sync through the room like any other action.
+  const earnMessage = useCallback((playerId: string) =>
+    dispatch({ type: 'earnMessage', playerId }), [dispatch])
+  const dismissMessage = useCallback((playerId: string) =>
+    dispatch({ type: 'dismissMessage', playerId }), [dispatch])
+  const resolveMessages = useCallback(() =>
+    dispatch({ type: 'resolveMessages' }), [dispatch])
+
   return {
     state,
     room: room.room,
+    syncEpoch: room.syncEpoch,
     createRoom: room.createRoom,
     joinRoom: room.joinRoom,
     leaveRoom: room.leaveRoom,
     addPlayer, updatePlayer, removePlayer, startGame, editPlayers,
     setExpansion, addScore, recordTokens, scoreTradeGoods, scoreGoldIngots,
     undoEntry, resetScores, newGame,
+    earnMessage, dismissMessage, resolveMessages,
   }
 }

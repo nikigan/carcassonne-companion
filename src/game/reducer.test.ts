@@ -98,5 +98,58 @@ describe('applyAction', () => {
     expect(s1.players).toHaveLength(0)
     expect(s1.started).toBe(false)
     expect(s1.expansions).toEqual(ALL_ON)
+    expect(s1.pendingMessages).toEqual([])
+  })
+
+  describe('pendingMessages (The Messengers)', () => {
+    it('earnMessage adds a player id and is idempotent', () => {
+      const s0 = gameWith([{ id: 'a' }, { id: 'b' }])
+      const s1 = applyAction(s0, { type: 'earnMessage', playerId: 'a' })
+      expect(s1.pendingMessages).toEqual(['a'])
+      // Re-earning the same player is a no-op (returns the same reference).
+      const s2 = applyAction(s1, { type: 'earnMessage', playerId: 'a' })
+      expect(s2).toBe(s1)
+      const s3 = applyAction(s2, { type: 'earnMessage', playerId: 'b' })
+      expect(s3.pendingMessages).toEqual(['a', 'b'])
+    })
+
+    it('dismissMessage removes one badge, resolveMessages clears all', () => {
+      let s = gameWith([{ id: 'a' }, { id: 'b' }])
+      s = applyAction(s, { type: 'earnMessage', playerId: 'a' })
+      s = applyAction(s, { type: 'earnMessage', playerId: 'b' })
+      const dismissed = applyAction(s, { type: 'dismissMessage', playerId: 'a' })
+      expect(dismissed.pendingMessages).toEqual(['b'])
+      const resolved = applyAction(s, { type: 'resolveMessages' })
+      expect(resolved.pendingMessages).toEqual([])
+    })
+
+    it('tolerates a legacy state with no pendingMessages field', () => {
+      const legacy = gameWith([{ id: 'a' }]) as GameState
+      delete (legacy as { pendingMessages?: string[] }).pendingMessages
+      const s1 = applyAction(legacy, { type: 'earnMessage', playerId: 'a' })
+      expect(s1.pendingMessages).toEqual(['a'])
+    })
+
+    it('resetScores clears pending badges', () => {
+      let s = gameWith([{ id: 'a' }])
+      s = applyAction(s, { type: 'earnMessage', playerId: 'a' })
+      const reset = applyAction(s, { type: 'resetScores' })
+      expect(reset.pendingMessages).toEqual([])
+    })
+
+    it('removePlayer drops that player\'s badge', () => {
+      let s = gameWith([{ id: 'a' }, { id: 'b' }])
+      s = applyAction(s, { type: 'earnMessage', playerId: 'a' })
+      s = applyAction(s, { type: 'earnMessage', playerId: 'b' })
+      const s1 = applyAction(s, { type: 'removePlayer', id: 'a' })
+      expect(s1.pendingMessages).toEqual(['b'])
+    })
+
+    it('turning The Messages off clears pending badges', () => {
+      let s = gameWith([{ id: 'a' }])
+      s = applyAction(s, { type: 'earnMessage', playerId: 'a' })
+      const off = applyAction(s, { type: 'setExpansion', expansion: 'messages', on: false })
+      expect(off.pendingMessages).toEqual([])
+    })
   })
 })
