@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useI18n } from '../i18n'
 
@@ -7,10 +8,38 @@ import { useI18n } from '../i18n'
  */
 export function UpdatePrompt() {
   const { t } = useI18n()
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null)
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
-  } = useRegisterSW()
+  } = useRegisterSW({
+    onRegisteredSW(_swUrl, r) {
+      registrationRef.current = r ?? null
+    },
+  })
+
+  // The browser only checks for a new service worker at registration time (page
+  // load). When the installed PWA is reopened from the background it resumes
+  // instead of reloading — especially on iOS — so a fresh build would otherwise
+  // go unnoticed until a full restart. Re-check whenever the app returns to the
+  // foreground; if a newer SW exists, `onNeedRefresh` flips `needRefresh` and
+  // the toast appears without a restart.
+  useEffect(() => {
+    const checkForUpdate = () => {
+      const r = registrationRef.current
+      if (!r || document.visibilityState !== 'visible') return
+      // Don't spam the network while installing or offline.
+      if (r.installing) return
+      if ('connection' in navigator && !navigator.onLine) return
+      void r.update()
+    }
+    document.addEventListener('visibilitychange', checkForUpdate)
+    window.addEventListener('focus', checkForUpdate)
+    return () => {
+      document.removeEventListener('visibilitychange', checkForUpdate)
+      window.removeEventListener('focus', checkForUpdate)
+    }
+  }, [])
 
   // Keep the live region mounted at all times and only toggle its contents, so
   // screen readers reliably announce the toast when `needRefresh` flips true.
