@@ -84,10 +84,10 @@ export default function App() {
             <span className="text-xl" aria-hidden>
               🏰
             </span>
-            {/* Title text is dead weight on phones (narrower than the `sm`
-                breakpoint, 640px — covers up to the iPhone 16 Pro Max) — the
-                🏰 carries the brand there. */}
-            <h1 className="text-lg font-bold leading-tight max-sm:hidden">
+            {/* The title shows on every size: moving the language + theme
+                controls into the menu freed up the header strip, so the phone
+                no longer needs to lean on the 🏰 alone for the brand. */}
+            <h1 className="text-lg font-bold leading-tight">
               {t.appTitle}
               <span className="block text-xs font-normal text-fg/50">
                 {t.appSubtitle}
