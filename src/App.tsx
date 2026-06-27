@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { useGame } from './useGame'
 import { LANGUAGES, useI18n } from './i18n'
 import { useTheme } from './theme'
@@ -17,6 +17,27 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [expansionsOpen, setExpansionsOpen] = useState(false)
   const [roomPanelOpen, setRoomPanelOpen] = useState(false)
+
+  // Close the header menu on an outside click or Escape. A plain overlay div
+  // can't do this here: the header's `backdrop-blur` makes it a containing
+  // block for `position: fixed`, so a `fixed inset-0` catcher would only cover
+  // the header strip, not the body. A document-level listener sidesteps that.
+  const menuRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!menuOpen) return
+    const onPointerDown = (e: PointerEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false)
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [menuOpen])
 
   // Measure the sticky header so the tablet two-column layout can offset the
   // sticky players column by exactly its height (it varies with the top
@@ -94,7 +115,7 @@ export default function App() {
             )}
 
             {state.started && (
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen((o) => !o)}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-fg/80 hover:bg-overlay/10"
@@ -102,11 +123,6 @@ export default function App() {
                   {t.menu} ▾
                 </button>
                 {menuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setMenuOpen(false)}
-                    />
                     <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-line/10 bg-surface shadow-xl">
                       {!room ? (
                         <MenuItem
@@ -189,7 +205,6 @@ export default function App() {
                         </>
                       )}
                     </div>
-                  </>
                 )}
               </div>
             )}
