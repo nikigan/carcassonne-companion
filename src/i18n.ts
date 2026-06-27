@@ -86,6 +86,7 @@ export interface Strings {
   featureNames: Record<FeatureType, string>
   tiles: string
   pennants: string
+  tilesAndPennants: string
   completed: string
   surroundingTiles: string
   completedCities: string
@@ -238,6 +239,7 @@ const en: Strings = {
   },
   tiles: 'Tiles',
   pennants: 'Coat of arms',
+  tilesAndPennants: 'Tiles + coats of arms',
   completed: 'Completed',
   surroundingTiles: 'Surrounding tiles',
   completedCities: 'Completed cities',
@@ -428,6 +430,7 @@ const ru: Strings = {
   },
   tiles: 'Тайлы',
   pennants: 'Щиты',
+  tilesAndPennants: 'Тайлы + щиты',
   completed: 'Завершён',
   surroundingTiles: 'Тайлы вокруг',
   completedCities: 'Завершённые города',

@@ -425,10 +425,24 @@ function CityForm({
     tiles,
     magic,
   )
+  // Tiles and coats of arms score identically; only the mage (+1 per tile,
+  // pennants excluded) cares about the split. With Mage & Witch off, collapse
+  // them into one combined count stored in `tiles` (pennants stays 0).
   return (
     <div>
-      <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
-      <NumberField label={t.pennants} value={pennants} onChange={setPennants} />
+      {mageWitch ? (
+        <>
+          <NumberField label={t.tiles} value={tiles} onChange={setTiles} min={1} />
+          <NumberField label={t.pennants} value={pennants} onChange={setPennants} />
+        </>
+      ) : (
+        <NumberField
+          label={t.tilesAndPennants}
+          value={tiles}
+          onChange={setTiles}
+          min={1}
+        />
+      )}
       <Toggle label={t.completed} checked={completed} onChange={setCompleted} />
       {innsCathedrals && (
         <Toggle
