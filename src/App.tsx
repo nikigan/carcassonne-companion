@@ -52,7 +52,9 @@ export default function App() {
             <span className="text-xl" aria-hidden>
               🏰
             </span>
-            <h1 className="text-lg font-bold leading-tight">
+            {/* Title text is dead weight on the smallest phones (narrower than
+                an iPhone 16 Pro Max, 440px) — the 🏰 carries the brand there. */}
+            <h1 className="text-lg font-bold leading-tight max-[439px]:hidden">
               {t.appTitle}
               <span className="block text-xs font-normal text-fg/50">
                 {t.appSubtitle}
